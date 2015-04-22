@@ -1,0 +1,151 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/txtBasicInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Basic Info"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <RelativeLayout
+                android:id="@+id/layoutBasicInfo"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtBasicInfo"
+                style="@style/profileContainerStyle">
+
+                <Button
+                    android:id="@+id/btnEditBasicInfo"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="edit basic info"
+                    style="@style/editProfileButtonStyle"/>
+
+                <TextView
+                    android:id="@+id/txtProfileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/btnEditBasicInfo"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/txtContactInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/layoutBasicInfo"
+                android:text="Contact Info"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <RelativeLayout
+                android:id="@+id/layoutContactInfo"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtContactInfo"
+                style="@style/profileContainerStyle">
+
+                <Button
+                    android:id="@+id/btnEditContactInfo"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="edit contact info"
+                    style="@style/editProfileButtonStyle"/>
+
+                <TextView
+                    android:id="@+id/txtProfileWorkPhone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/btnEditContactInfo"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                <TextView
+                    android:id="@+id/txtProfileWorkEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtProfileWorkPhone"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/txtLocationInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/layoutContactInfo"
+                android:text="Location Info"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <RelativeLayout
+                android:id="@+id/layoutLocationInfo"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtLocationInfo"
+                style="@style/profileContainerStyle">
+
+                <Button
+                    android:id="@+id/btnAddLocationInfo"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="add new address"
+                    style="@style/editProfileButtonStyle"/>
+
+
+                <ListView
+                    android:id="@+id/listViewAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_below="@+id/btnAddLocationInfo"
+                    android:layout_gravity="left|top" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/txtWorkInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/layoutLocationInfo"
+                android:text="Work Info"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <RelativeLayout
+                android:id="@+id/layoutWorkInfo"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txtWorkInfo"
+                style="@style/profileContainerStyle">
+
+                <Button
+                    android:id="@+id/btnEditWorkInfo"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="edit work info"
+                    style="@style/editProfileButtonStyle"/>
+
+                <TextView
+                    android:id="@+id/txtProfilePosition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/btnEditWorkInfo"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                <TextView
+                    android:id="@+id/txtProfileDepartment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtProfilePosition"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+            </RelativeLayout>
+        </RelativeLayout>
+    </ScrollView>
+</FrameLayout>

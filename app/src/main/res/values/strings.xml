@@ -1,0 +1,82 @@
+<resources>
+    <string name="app_name">hrmPrototype</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_logged_in">LoggedIn</string>
+
+
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="title_activity_logged_main">LoggedMainActivity</string>
+
+    <string-array name="navdrawer_titles">
+        <item>My Profile</item>
+        <item>My Leave</item>
+        <item>Leave Management</item>
+    </string-array>
+
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+
+    <string-array name="genderItems">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
+
+    <string-array name="religionItems">
+        <item>Islam</item>
+        <item>Buddhism</item>
+        <item>Christian</item>
+        <item>Hinduism</item>
+        <item>Catholic</item>
+        <item>Others</item>
+    </string-array>
+
+    <string-array name="maritalItems">
+        <item>Single</item>
+        <item>Married</item>
+        <item>Divorced</item>
+        <item>Widowed</item>
+    </string-array>
+
+    <string-array name="gradeItems">
+        <item>Junior 1</item>
+        <item>Junior 2</item>
+        <item>Junior 3</item>
+        <item>Senior 1</item>
+        <item>Senior 2</item>
+        <item>Senior 3</item>
+    </string-array>
+
+    <string-array name="empTypeItems">
+        <item>Internship</item>
+        <item>Contracted</item>
+        <item>Permanent</item>
+    </string-array>
+
+    <string-array name="departmentItems">
+        <item>SOA team</item>
+        <item>Java team</item>
+        <item>Project Management team</item>
+        <item>HR &amp; Admin team</item>
+        <item>Management team</item>
+    </string-array>
+
+    <string-array name="addressTypeItems">
+        <item>Permanent</item>
+        <item>Correspondance</item>
+        <item>Work</item>
+        <item>Other</item>
+    </string-array>
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_logged_in_main">LoggedInMain</string>
+    <string name="title_activity_apply_leave">ApplyLeave</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_activity_leave_main">LeaveMain</string>
+    <string name="title_activity_my_leave">MyLeaveActivity</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="title_activity_master">MasterActivity</string>
+</resources>
