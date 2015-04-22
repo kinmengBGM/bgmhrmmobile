@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_color">#f4f5ed</color>
+    <color name="buttonText">#ffffff</color>
+    <color name="buttonBackground">#dc4e00</color>
+    <color name="frame_color">#c7c9be</color>
+    <color name="text_color">#828478</color>
+    <color name="ab_bg_orange">#b13f01</color>
+    <color name="ab_stacked">#ffffff</color>
+    <color name="tab_selected">#dc4e00</color>
+    <color name="tab_unselected">#f4f5ed</color>
+    <color name="spinner_active">#c7c9be</color>
+    <color name="spinner_inactive">#c7c9be</color>
+    <color name="edittext">#ffffff</color>
+    <color name="base_grey">#f4f5ed</color>
+    <color name="approved_color">#00a208</color>
+    <color name="red">#FF3B00</color>
+    <color name="red_press">#990000</color>
+</resources>

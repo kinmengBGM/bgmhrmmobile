@@ -1,0 +1,117 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="hrm.com.profile.EditBasicDetails">
+
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="left|top">
+
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="*Name: "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/editName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_column="1" />
+
+            <TextView
+                android:id="@+id/icNo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="IC Number: "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/editIcNo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_column="1" />
+
+            <TextView
+                android:id="@+id/passportNo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Passport Number: "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/editPassportNo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_column="1" />
+
+            <TextView
+                android:id="@+id/gender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gender: "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <Spinner
+                android:id="@+id/editGender"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:entries="@array/genderItems" />
+
+
+            <TextView
+                android:id="@+id/religion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Religion: "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <Spinner
+                android:id="@+id/editReligion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:entries="@array/religionItems" />
+
+            <TextView
+                android:id="@+id/marital"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Marital Status: "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <Spinner
+                android:id="@+id/editMarital"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:entries="@array/maritalItems" />
+
+            <TextView
+                android:id="@+id/nationality"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nationality: "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/editNationality"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_column="1" />
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>
