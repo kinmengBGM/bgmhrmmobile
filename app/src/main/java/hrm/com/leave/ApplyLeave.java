@@ -1,18 +1,25 @@
 package hrm.com.leave;
 
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.util.Base64;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +31,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,7 +47,9 @@ import java.util.List;
 import hrm.com.custom.enums.Leave;
 import hrm.com.custom.enums.LeaveStatus;
 import hrm.com.custom.fragment.DatePickerFragment;
+import hrm.com.custom.fragment.SickLeaveAttachmentDialog;
 import hrm.com.custom.listener.DatePickerListener;
+import hrm.com.custom.listener.SickLeaveAttachmentListener;
 import hrm.com.custom.listener.TaskListener;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
@@ -51,6 +65,13 @@ import hrm.com.wrapper.GetLeaveRuleByRoleAndLeaveTypeWrapper;
 @SuppressWarnings("ValidFragment")
 public class ApplyLeave extends Fragment implements TaskListener, AdapterView.OnItemSelectedListener, View.OnClickListener {
 
+    //FILE MANAGER
+    final int THUMBSIZE = 128;
+
+    private static final int REQUEST_SELECT_PICTURE = 7;
+    private static final int REQUEST_IMAGE_CAPTURE = 8;
+
+    private String selectedImagePath;
 
     private int selectedYearlyEntitlement = 0;
     private String leaveType;
@@ -63,7 +84,10 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     //private AuditTrail auditTrail;
     private Double allowedMaximumLeaves;
     //private UploadedFile sickLeaveAttachment;
-    //private byte[] byteData = null;
+
+    private String leaveAttachmentName;
+    private byte[] byteData = null;
+
     private String timings;
     private LeaveTransaction leaveTransaction = new LeaveTransaction();
     private List<String> roleList;
@@ -82,14 +106,17 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     private EditText editEndDate;
     private EditText editNoOfDays;
     private EditText editReason;
+    private EditText editAttachment;
 
-    private TextView txtEntitlement, txtCurrentLeaveBal, txtYearlyLeaveBal;
+    private TextView txtEntitlement, txtCurrentLeaveBal, txtYearlyLeaveBal, txtAttachment;
+
+    private ImageView thumbnail;
     /*
     private TableRow rowCurrentLeaveBal;
     private TableRow rowYearlyLeaveBal;
     private TableRow rowEntitlement;
 */
-    private Button btnApplyLeave;
+    private Button btnApplyLeave, btnAttachment;
 
     private String username;
     private String password;
@@ -99,13 +126,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
     public static ApplyLeave newInstance() {
         return new ApplyLeave();
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_my_leave, menu);
-        if (menu != null)
-            menu.findItem(R.id.action_new).setVisible(false);
     }
 
     @Override
@@ -148,6 +168,7 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         txtEntitlement = (TextView) rootView.findViewById(R.id.entitlement);
         txtCurrentLeaveBal = (TextView) rootView.findViewById(R.id.currentLeaveBal);
         txtYearlyLeaveBal = (TextView) rootView.findViewById(R.id.yearlyLeaveBal);
+        txtAttachment = (TextView) rootView.findViewById(R.id.attachment);
 
         editEntitlement = (EditText) rootView.findViewById(R.id.editEntitlement);
         editCurrentLeaveBal = (EditText) rootView.findViewById(R.id.editCurrentLeaveBal);
@@ -156,11 +177,16 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         editEndDate = (EditText) rootView.findViewById(R.id.editEndDate);
         editNoOfDays = (EditText) rootView.findViewById(R.id.editNoOfDays);
         editReason = (EditText) rootView.findViewById(R.id.editReason);
+        editAttachment = (EditText) rootView.findViewById(R.id.editAttachment);
 
         btnApplyLeave = (Button) rootView.findViewById(R.id.btnApplyLeave);
+        btnAttachment = (Button) rootView.findViewById(R.id.btnAttachment);
+
+        thumbnail = (ImageView) rootView.findViewById(R.id.thumbnailAttachment);
 
         editStartDate.setOnClickListener(this);
         editEndDate.setOnClickListener(this);
+        btnAttachment.setOnClickListener(this);
         btnApplyLeave.setOnClickListener(this);
     }
 
@@ -208,8 +234,21 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
                 dialog.show(getActivity().getSupportFragmentManager(), "MyDatePickerDialog");
                 break;
 
-            case R.id.btnApplyLeave:
+            case R.id.btnAttachment:
+                SickLeaveAttachmentDialog sickDialog = new SickLeaveAttachmentDialog(new SickLeaveAttachmentListener() {
+                    @Override
+                    public void onCameraSelected() {
+                        dispatchCameraIntent();
+                    }
 
+                    @Override
+                    public void onGallerySelected() {
+                        dispatchGalleryIntent();
+                    }
+                });
+                sickDialog.show(getActivity().getSupportFragmentManager(), "SickLeaveDialog");
+                break;
+            case R.id.btnApplyLeave:
                 Toast.makeText(getActivity().getApplicationContext(), "Apply Leave", Toast.LENGTH_SHORT).show();
                 try {
                     setValues();
@@ -224,13 +263,128 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     }
 
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Bitmap imageBitmap;
+
+        //Select picture from gallery
+        if (requestCode == REQUEST_SELECT_PICTURE && resultCode == getActivity().RESULT_OK){
+            Toast.makeText(getActivity().getApplicationContext(), "File uploaded from gallery", Toast.LENGTH_SHORT).show();
+            Uri selectedImageUri = data.getData();
+            /* OI FILE MANAGER DISABLED
+            //OI FILE Manager
+            filemanagerstring = selectedImageUri.getPath();
+            */
+            //MEDIA GALLERY
+            selectedImagePath = getPath(selectedImageUri);
+
+        }
+
+        //Take picture from camera
+        else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == getActivity().RESULT_OK) {
+            Toast.makeText(getActivity().getApplicationContext(), "File uploaded from camera", Toast.LENGTH_SHORT).show();
+        }
+
+        if (selectedImagePath != null) {
+            imageBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(selectedImagePath), THUMBSIZE, THUMBSIZE);
+            retrieveFile(selectedImagePath, imageBitmap);
+
+        }
+
+    }
+
+    //Gallery functions
+    public void dispatchGalleryIntent(){
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_PICK);
+        startActivityForResult(Intent.createChooser(intent,"Select Picture"), REQUEST_SELECT_PICTURE);
+    }
+
+    public String getPath(Uri uri) {
+        String[] projection = {MediaStore.Images.Media.DATA};
+        Cursor cursor = getActivity().managedQuery(uri, projection, null, null, null);
+        if (cursor != null) {
+            //NULL POINTER IF OI FILE MANAGER USED FOR PICKING THE MEDIA
+            int column_index = cursor
+                    .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } else return null;
+    }
+
+    //Camera functions
+    private void dispatchCameraIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+                Toast.makeText(getActivity().getApplicationContext(), "Error Creating File", Toast.LENGTH_SHORT).show();
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                makeAvailableToGallery();
+            }
+        }
+    }
+
+    private void makeAvailableToGallery(){
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(selectedImagePath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        getActivity().sendBroadcast(mediaScanIntent);
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp;
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+       selectedImagePath = image.getAbsolutePath();
+        return image;
+    }
+
+    public void retrieveFile(String filepath, Bitmap imageBitmap){
+        File imagefile = new File(filepath);
+        leaveAttachmentName = imagefile.getName();
+        editAttachment.setText(leaveAttachmentName);
+        thumbnail.setImageBitmap(imageBitmap);
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(imagefile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        Bitmap bm = BitmapFactory.decodeStream(fis);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100 , baos);
+        byteData = baos.toByteArray();
+
+        //String encImage = Base64.encodeToString(b, Base64.DEFAULT);
+
+    }
 
     public void updateUiValues(int position) {
         if (!(yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Unpaid leave") || yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Time-In-Lieu leave"))) {
             editEntitlement.setVisibility(View.VISIBLE);
             txtEntitlement.setVisibility(View.VISIBLE);
             editEntitlement.setText(String.valueOf(yearlyEntitlementList.get(position).getEntitlement()));
-        } else{
+        } else {
             editEntitlement.setVisibility(View.GONE);
             txtEntitlement.setVisibility(View.GONE);
         }
@@ -251,6 +405,16 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         } else {
             editYearlyLeaveBal.setVisibility(View.GONE);
             txtYearlyLeaveBal.setVisibility(View.GONE);
+        }
+
+        if (yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Sick leave")) {
+            txtAttachment.setVisibility(View.VISIBLE);
+            editAttachment.setVisibility(View.VISIBLE);
+            btnAttachment.setVisibility(View.VISIBLE);
+        } else{
+            txtAttachment.setVisibility(View.GONE);
+            editAttachment.setVisibility(View.GONE);
+            btnAttachment.setVisibility(View.GONE);
         }
     }
 
@@ -392,7 +556,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         Date date;
-        Toast.makeText(getActivity().getApplicationContext(), editStartDate.getText().toString(), Toast.LENGTH_SHORT).show();
 
         date = sdf.parse(editStartDate.getText().toString());
         setStartDate(date);
@@ -499,18 +662,17 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
             leaveTransaction.setCreationTime(new Date());
             leaveTransaction.setStatus(LeaveStatus.PENDING.toString());
 
-          /*  if ("Sick".equalsIgnoreCase(leaveType)) {
+            if ("Sick".equalsIgnoreCase(leaveType)) {
                 if (byteData != null) {
-                    //String sickLeaveAttachmentName = sickLeaveAttachment.getFileName();
-                    //leaveTransaction.setSickLeaveAttachment(byteData);
-                    //leaveTransaction.setSickLeaveAttachmentName(sickLeaveAttachmentName);
+                    leaveTransaction.setSickLeaveAttachment(byteData);
+                    leaveTransaction.setSickLeaveAttachmentName(leaveAttachmentName);
                 } else {
                     //FacesMessage msg = new FacesMessage(getExcptnMesProperty("error.sickleaveattachment.mcNotFound"), getExcptnMesProperty("error.sickleaveattachment.mcNotFound"));
                     //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
                     //FacesContext.getCurrentInstance().addMessage(null, msg);
                     return "";
                 }
-            }*/
+            }
 
             // Get the Leave Rule for the applying leave applicant
             roleList = new ArrayList<String>();
@@ -520,56 +682,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
             GetLeaveRuleByRoleAndLeaveTypeTask getLeaveRuleByRoleAndLeaveTypeTask = new GetLeaveRuleByRoleAndLeaveTypeTask();
             getLeaveRuleByRoleAndLeaveTypeTask.execute();
-            //LeaveRuleBean  leaveRuleBean = getLeaveRuleByRoleAndLeaveTypeTask(leaveType, roleList);
-
-            // saving the decisions taken by the approvers on a list
-
-
-            //leaveFlowDecisions = saveLeaveApprovalDecisions(null);
-            //LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionService.saveLeaveApprovalDecisions(null);
-            // saving the leave transaction bean with the defined rule and decision bean
-
-            try {
-                //LeaveApplication successful
-
-                //leavePersistBean = processAppliedLeaveOfEmployee(leaveTransaction);
-
-				/*
-				LeaveTransaction leavePersistBean = leaveTransactionService.processAppliedLeaveOfEmployee(leaveTransaction);
-				ApplLogger.getLogger().info("Employee Leave is applied successfully with transaction ID : "	+ leavePersistBean.getId());
-				ApplLogger.getLogger().info("Employee Transaction Details : " + leavePersistBean.toString());
-				LeaveApplicationEmailNotificationService.sendingIntimationEmail(leavePersistBean);
-				*/
-
-
-
-                // leaveApplicationService.submitLeave(getEmployee(),
-                // getYearlyEntitlement(), leaveTransaction); Enable for Jbpm process
-
-                //AUDITTRAIL
-                //auditTrail.log(SystemAuditTrailActivity.CREATED, SystemAuditTrailLevel.INFO, getActorUsers().getId(),
-                //	getActorUsers().getUsername(), getActorUsers().getUsername() + " has successfully applied leave for "
-                //			+ getNumberOfDays() + " day(s).");
-                //FacesMessage msg = new FacesMessage(getExcptnMesProperty("info.applyleave"),getExcptnMesProperty("info.applyleave"));
-                //msg.setSeverity(FacesMessage.SEVERITY_INFO);
-                //FacesContext.getCurrentInstance().addMessage("index.xhtml", msg);
-                //FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-        /*    } catch (BSLException e) {
-                e.printStackTrace();*/
-                //auditTrail.log(SystemAuditTrailActivity.CREATED, SystemAuditTrailLevel.ERROR, getActorUsers().getId(), getActorUsers().getUsername(),
-                //		getActorUsers().getUsername() + " has failed to apply leave for " + getNumberOfDays() + " day(s).");
-                //FacesMessage msg = new FacesMessage(getExcptnMesProperty(e.getMessage()), getExcptnMesProperty(e.getMessage()));
-                //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                //FacesContext.getCurrentInstance().addMessage("index.xhtml", msg);
-                //FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-            } catch (Exception e) {
-                //e.printStackTrace();
-                //auditTrail.log(SystemAuditTrailActivity.CREATED,SystemAuditTrailLevel.ERROR, getActorUsers().getId(),
-                //		getActorUsers().getUsername(), getActorUsers().getUsername() + " has failed to apply leave for "+ getNumberOfDays() + " day(s).");
-                //FacesMessage msg = new FacesMessage(getExcptnMesProperty(e.getMessage()),getExcptnMesProperty(e.getMessage()));
-                //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                //FacesContext.getCurrentInstance().addMessage("index.xhtml", msg);FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-            }
 
         }
 

@@ -128,12 +128,41 @@
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine" />
 
+            <TextView
+                android:id="@+id/attachment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="*Sick Leave Attachment: "
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/editAttachment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:editable="false"
+                android:enabled="false"  />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/thumbnailAttachment"
+                android:layout_gravity="center_horizontal" />
+
+            <Button
+                android:id="@+id/btnAttachment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:text="Attach file" />
+
             <Button
                 android:id="@+id/btnApplyLeave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_column="1"
                 android:text="Apply Leave" />
+
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

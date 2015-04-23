@@ -10,7 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import hrm.com.hrmprototype.HomeActivity;
+import hrm.com.custom.listener.RejectLeaveListener;
 import hrm.com.hrmprototype.R;
 
 /**
@@ -19,27 +19,18 @@ import hrm.com.hrmprototype.R;
 @SuppressLint("ValidFragment")
 public class RejectLeaveDialog extends DialogFragment implements View.OnClickListener {
 
-    private int employeeId;
-    private int leaveTypeId;
-    private String username;
-    private String password;
 
     private EditText rejectReason;
+    private RejectLeaveListener mListener;
 
-    public RejectLeaveDialog(){
-    }
-
-    public RejectLeaveDialog(int employeeId, int leaveTypeId){
-        this.employeeId = employeeId;
-        this.leaveTypeId = leaveTypeId;
+    public RejectLeaveDialog(RejectLeaveListener mListener){
+        this.mListener = mListener;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.dialog_reject_leave, container);
-        username = ((HomeActivity) getActivity()).getUsername();
-        password = ((HomeActivity) getActivity()).getPassword();
 
         rejectReason = (EditText) view.findViewById(R.id.editRejectReason);
         Button cancel = (Button) view.findViewById(R.id.btnRejectLeaveCancel);
@@ -58,7 +49,8 @@ public class RejectLeaveDialog extends DialogFragment implements View.OnClickLis
                 dismiss();
                 break;
             case R.id.btnRejectLeave:
-                Toast.makeText(getActivity().getApplicationContext(), String.valueOf(employeeId) + " " + String.valueOf(leaveTypeId), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplicationContext(), "REJECT", Toast.LENGTH_SHORT).show();
+                mListener.onRejectLeave(rejectReason.getText().toString());
                 break;
         }
     }

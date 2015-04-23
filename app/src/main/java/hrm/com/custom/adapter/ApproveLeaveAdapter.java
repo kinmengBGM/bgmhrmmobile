@@ -82,7 +82,7 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction> imp
     public void onClick(View v) {
         switch(v.getId()){
             case R.id.rejectView:
-                listener.onRejectSelected(leaveTransaction.getEmployee().getId(), leaveTransaction.getLeaveType().getId());
+                listener.onRejectSelected(leaveTransaction.getId());
                 break;
 
             case R.id.approveView:
