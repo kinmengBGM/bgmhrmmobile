@@ -6,5 +6,5 @@ package hrm.com.custom.listener;
 public interface ApproveLeaveListener {
 
     public void onRejectSelected(int leaveTransactionId);
-    public void onApproveSelected();
+    public void onApproveSelected(int leaveTransactionId);
 }

@@ -22,31 +22,38 @@ public class ProfileBaseFragment extends Fragment {
         // Required empty public constructor
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_profile_base, container, false);
+        View rootView = inflater.inflate(R.layout.activity_home, container, false);
 
         ((HomeActivity)getActivity()).enableNavigationDrawer(true);
 
         Fragment viewProfile= ViewProfile.newInstance(new ProfileFragmentChangeListener() {
 
-            FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
             @Override
             public void onEditBasicInfo() {
 
                 ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 Fragment editBasic = new EditBasicDetails();
-                transaction.replace(R.id.child_fragment, editBasic).commit();
+                transaction.replace(R.id.content_frame, editBasic).commit();
             }
 
             @Override
             public void onEditContactInfo() {
                 ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 Fragment editContact = new EditContactInfo();
-                transaction.replace(R.id.child_fragment, editContact).commit();
+                transaction.replace(R.id.content_frame, editContact).commit();
 
             }
 
@@ -54,7 +61,7 @@ public class ProfileBaseFragment extends Fragment {
             public void onEditAddressInfo() {
                 ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 Fragment editAddress = new EditAddress();
-                transaction.replace(R.id.child_fragment, editAddress).commit();
+                transaction.replace(R.id.content_frame, editAddress).commit();
 
             }
 
@@ -62,7 +69,7 @@ public class ProfileBaseFragment extends Fragment {
             public void onCreateAddress() {
                 ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 Fragment createAddress = new CreateAddress();
-                transaction.replace(R.id.child_fragment, createAddress).commit();
+                transaction.replace(R.id.content_frame, createAddress).commit();
 
             }
 
@@ -70,12 +77,12 @@ public class ProfileBaseFragment extends Fragment {
             public void onEditWorkInfo() {
                 ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 Fragment editWork = new EditWorkInfo();
-                transaction.replace(R.id.child_fragment, editWork).commit();
+                transaction.replace(R.id.content_frame, editWork).commit();
 
             }
         });
-        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-        transaction.replace(R.id.child_fragment, viewProfile).commit();
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content_frame, viewProfile).addToBackStack("Profile").commit();
         return rootView;
     }
 

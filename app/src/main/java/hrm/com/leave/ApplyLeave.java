@@ -882,7 +882,7 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         }
 
         @Override
-        protected LeaveRuleBean doInBackground(String... params) {
+          protected LeaveRuleBean doInBackground(String... params) {
             // The connection URL
             String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveTransaction/getLeaveRuleByRoleAndLeaveType";
             RestTemplate restTemplate = new RestTemplate();

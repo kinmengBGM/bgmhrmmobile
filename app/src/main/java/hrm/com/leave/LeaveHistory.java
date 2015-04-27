@@ -73,6 +73,13 @@ public class LeaveHistory extends Fragment{
         return rootView;
     }
 
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        getActivity().invalidateOptionsMenu();
+    }
+
     public void setListAdapter(List<LeaveTransaction> result){
         listData = new ArrayList<LeaveTransaction>();
         listAdapter = new LeaveAdapter(getActivity().getApplicationContext(), listData);

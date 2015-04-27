@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -22,14 +20,6 @@ import hrm.com.profile.ProfileBaseFragment;
 public class Fragment1 extends Fragment implements View.OnClickListener{
 
     Employee employee;
-
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((HomeActivity)getActivity()).enableNavigationDrawer(false);
-        inflater.inflate(R.menu.menu_home, menu);
-    }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,20 +41,14 @@ public class Fragment1 extends Fragment implements View.OnClickListener{
         return rootView;
     }
 
-
-    @Override
-    public void onResume(){
-        super.onResume();
-        getActivity().invalidateOptionsMenu();
-    }
-
     @Override
     public void onClick(View v) {
         switch(v.getId()){
             case R.id.btnEditProfile:
                 FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
-                ft.replace(R.id.content_frame, new ProfileBaseFragment()).addToBackStack("Profile").commit();
-            break;
+                ft.replace(R.id.content_frame, new ProfileBaseFragment()).commit();
+
+                break;
         }
     }
 }

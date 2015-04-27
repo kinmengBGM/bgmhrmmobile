@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.daimajia.swipe.adapters.ArraySwipeAdapter;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import hrm.com.custom.listener.ApproveLeaveListener;
@@ -19,18 +18,17 @@ import hrm.com.model.LeaveTransaction;
 /**
  * Created by Beans on 4/7/2015.
  */
-public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction> implements View.OnClickListener {
+public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction>{
 
     private Context context;
     private List<LeaveTransaction> approveLeaveList;
     private ApproveLeaveListener listener;
 
-    private LeaveTransaction leaveTransaction;
 
     public ApproveLeaveAdapter(Context context, int resource, List<LeaveTransaction> approveLeaveList, ApproveLeaveListener listener) {
         super(context, resource, approveLeaveList);
         this.context = context;
-        this.approveLeaveList=approveLeaveList;
+        this.approveLeaveList = approveLeaveList;
         this.listener = listener;
     }
 
@@ -43,8 +41,8 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction> imp
             v = inflater.inflate(R.layout.approve_leave_row_layout, null);
         }
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd-MM-yyyy");
-        leaveTransaction = approveLeaveList.get(position);
+        //SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd-MM-yyyy");
+        final LeaveTransaction leaveTransaction = approveLeaveList.get(position);
 
         TextView employeeName = (TextView) v.findViewById(R.id.txtApproveEmployeeName);
         TextView leaveType = (TextView) v.findViewById(R.id.txtApproveLeaveType);
@@ -56,13 +54,23 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction> imp
         leaveType.setText(leaveTransaction.getLeaveType().getDescription());
         numberOfDays.setText("Number of Days: " + leaveTransaction.getNumberOfDays().toString());
         reason.setText("Reason: " + leaveTransaction.getReason());
-        dates.setText(dateFormat.format(leaveTransaction.getStartDateTime()) + " to " + dateFormat.format(leaveTransaction.getEndDateTime()));
+        dates.setText(leaveTransaction.fetchStartTimeStr() + " to " + leaveTransaction.fetchEndTimeStr());
 
         ImageView btnReject = (ImageView)v.findViewById(R.id.rejectView);
-        btnReject.setOnClickListener(this);
+        btnReject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onRejectSelected(leaveTransaction.getId());
+            }
+        });
 
         ImageView btnApprove = (ImageView)v.findViewById(R.id.approveView);
-        btnApprove.setOnClickListener(this);
+        btnApprove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onApproveSelected(leaveTransaction.getId());
+            }
+        });
 
         return v;
     }
@@ -72,23 +80,13 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction> imp
         return R.id.swipeLayout;
     }
 
+/*
     public LeaveTransaction getItem(int position){
         if (approveLeaveList != null)
             return approveLeaveList.get(position);
         return null;
     }
+*/
 
-    @Override
-    public void onClick(View v) {
-        switch(v.getId()){
-            case R.id.rejectView:
-                listener.onRejectSelected(leaveTransaction.getId());
-                break;
-
-            case R.id.approveView:
-                listener.onApproveSelected();
-                break;
-        }
-    }
 }
 

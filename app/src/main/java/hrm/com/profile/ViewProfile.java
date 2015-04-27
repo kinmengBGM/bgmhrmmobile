@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Base64;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -63,11 +65,25 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
     }
 
     @Override
+    public void onResume(){
+        super.onResume();
+        setHasOptionsMenu(true);
+        ((HomeActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
+        ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((HomeActivity)getActivity()).getSupportActionBar().setTitle("View Profile");
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu,inflater);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_view_profile, container, false);
-
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
         ((HomeActivity)getActivity()).getSupportActionBar().setTitle("View Profile");
         this.username = ((HomeActivity) getActivity()).getUsername();
         this.password = ((HomeActivity) getActivity()).getPassword();
@@ -93,7 +109,8 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
         workPhone.setText(employee.getOfficePhone());
         workEmail.setText(employee.getWorkEmailAddress());
         position.setText(employee.getPosition());
-        department.setText(employee.getDepartment().getDescription());
+        if(employee.getDepartment().getDescription()!= null)
+            department.setText(employee.getDepartment().getDescription());
 
         adpt = new AddressAdapter(new ArrayList<Address>(), rootView.getContext());
         lView = (ListView) rootView.findViewById(R.id.listViewAddress);
@@ -189,7 +206,7 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
                 adpt.notifyDataSetChanged();
                 setListViewHeightBasedOnChildren(lView);
             }
-            ((HomeActivity)getActivity()).setExistingAddressList(addressList);
+            //((HomeActivity)getActivity()).setExistingAddressList(addressList);
 
         }
 

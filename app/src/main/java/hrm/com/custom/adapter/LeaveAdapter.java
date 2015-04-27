@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import hrm.com.hrmprototype.R;
@@ -89,13 +88,12 @@ public class LeaveAdapter extends BaseExpandableListAdapter {
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = infalInflater.inflate(R.layout.leave_row_layout, null);
         }
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
         TextView reason = (TextView) convertView.findViewById(R.id.reason);
         TextView status = (TextView) convertView.findViewById(R.id.status);
         TextView dates = (TextView) convertView.findViewById(R.id.dates);
 
-        dates.setText(dateFormat.format(head.getStartDateTime()).toString() + " to " + dateFormat.format(head.getStartDateTime()).toString());
+        dates.setText(head.fetchStartTimeStr() + " to " + head.fetchEndTimeStr());
         reason.setText(head.getReason());
 
         if (head.getStatus().equals("Approved")) status.setTextColor(Color.parseColor("#00a208"));

@@ -31,7 +31,7 @@ dependencies {
     compile 'com.android.support:support-v4:21.+'
     compile "com.daimajia.swipelayout:library:1.2.0@aar"
     compile 'org.apache.commons:commons-lang3:3.4'
-
+    compile 'commons-codec:commons-codec:1.10'
 }
 android {
     packagingOptions {

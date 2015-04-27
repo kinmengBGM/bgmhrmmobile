@@ -17,14 +17,19 @@ import hrm.com.hrmprototype.R;
 public class DrawerItemCustomAdapter extends ArrayAdapter<DrawerItem> {
 
     private LayoutInflater mInflater;
+    private List<DrawerItem> items;
 
     public enum RowType {
         LIST_ITEM, HEADER_ITEM
     }
 
+    private static final int TYPE_ITEM = 0;
+    private static final int TYPE_SEPARATOR = 1;
+
     public DrawerItemCustomAdapter(Context context, List<DrawerItem> items) {
         super(context, 0, items);
         mInflater = LayoutInflater.from(context);
+        this.items = items;
     }
 
     @Override
@@ -38,8 +43,12 @@ public class DrawerItemCustomAdapter extends ArrayAdapter<DrawerItem> {
         return getItem(position).getViewType();
     }
 
-    private static final int TYPE_ITEM = 0;
-    private static final int TYPE_SEPARATOR = 1;
+    @Override
+    public DrawerItem getItem(int position){
+        if (items != null)
+            return items.get(position);
+        return null;
+    }
 
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder = null;
