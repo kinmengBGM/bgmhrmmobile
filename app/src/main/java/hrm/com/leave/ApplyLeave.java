@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +20,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,6 +54,7 @@ import hrm.com.custom.fragment.SickLeaveAttachmentDialog;
 import hrm.com.custom.listener.DatePickerListener;
 import hrm.com.custom.listener.SickLeaveAttachmentListener;
 import hrm.com.custom.listener.TaskListener;
+import hrm.com.hrmprototype.Fragment1;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.Employee;
@@ -116,7 +120,10 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     private TableRow rowYearlyLeaveBal;
     private TableRow rowEntitlement;
 */
-    private Button btnApplyLeave, btnAttachment;
+    private Button btnApplyLeave;
+    private ImageButton btnAttachment;
+
+    private LinearLayout sickLeaveRow;
 
     private String username;
     private String password;
@@ -157,14 +164,8 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         yearlyEntitlementList = new ArrayList<YearlyEntitlement>();
 
         editLeaveType = (Spinner) rootView.findViewById(R.id.editLeaveType);
-        editLeaveType.setOnItemSelectedListener(this);/*
+        editLeaveType.setOnItemSelectedListener(this);
 
-        rowEntitlement = (TableRow) rootView.findViewById(R.id.rowEntitlement);
-        rowCurrentLeaveBal = (TableRow) rootView.findViewById(R.id.rowCurrentLeaveBal);
-        rowYearlyLeaveBal = (TableRow) rootView.findViewById(R.id.rowYearlyLeaveBal);
-        rowCurrentLeaveBal = (TableRow) rootView.findViewById(R.id.rowCurrentLeaveBal);
-        rowCurrentLeaveBal = (TableRow) rootView.findViewById(R.id.rowCurrentLeaveBal);
-*/
         txtEntitlement = (TextView) rootView.findViewById(R.id.entitlement);
         txtCurrentLeaveBal = (TextView) rootView.findViewById(R.id.currentLeaveBal);
         txtYearlyLeaveBal = (TextView) rootView.findViewById(R.id.yearlyLeaveBal);
@@ -173,16 +174,19 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         editEntitlement = (EditText) rootView.findViewById(R.id.editEntitlement);
         editCurrentLeaveBal = (EditText) rootView.findViewById(R.id.editCurrentLeaveBal);
         editYearlyLeaveBal = (EditText) rootView.findViewById(R.id.editYearlyLeaveBal);
+
         editStartDate = (EditText) rootView.findViewById(R.id.editStartDate);
         editEndDate = (EditText) rootView.findViewById(R.id.editEndDate);
         editNoOfDays = (EditText) rootView.findViewById(R.id.editNoOfDays);
         editReason = (EditText) rootView.findViewById(R.id.editReason);
+
         editAttachment = (EditText) rootView.findViewById(R.id.editAttachment);
-
-        btnApplyLeave = (Button) rootView.findViewById(R.id.btnApplyLeave);
-        btnAttachment = (Button) rootView.findViewById(R.id.btnAttachment);
-
         thumbnail = (ImageView) rootView.findViewById(R.id.thumbnailAttachment);
+
+        btnAttachment = (ImageButton) rootView.findViewById(R.id.btnAttachment);
+        btnApplyLeave = (Button) rootView.findViewById(R.id.btnApplyLeave);
+
+        sickLeaveRow = (LinearLayout) rootView.findViewById(R.id.rowSickLeave);
 
         editStartDate.setOnClickListener(this);
         editEndDate.setOnClickListener(this);
@@ -199,7 +203,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         switch (parent.getId()) {
             case R.id.editLeaveType:
-                Toast.makeText(getActivity().getApplicationContext(), String.valueOf(yearlyEntitlementList.get(position).getId()), Toast.LENGTH_SHORT).show();
                 updateUiValues(position);
                 yearlyEntitlementSelected(yearlyEntitlementList.get(position).getId());
                 break;
@@ -249,14 +252,17 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
                 sickDialog.show(getActivity().getSupportFragmentManager(), "SickLeaveDialog");
                 break;
             case R.id.btnApplyLeave:
-                Toast.makeText(getActivity().getApplicationContext(), "Apply Leave", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplicationContext(), "Leave Applied", Toast.LENGTH_SHORT).show();
+
                 try {
                     setValues();
                     applyLeave();
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    Toast.makeText(getActivity().getApplicationContext(), "Parse Exception", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity().getApplicationContext(), "Error processing leave application", Toast.LENGTH_SHORT).show();
                 }
+                FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
+                fm.replace(R.id.content_frame,new Fragment1()).commit();
                 break;
         }
 
@@ -380,13 +386,36 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     }
 
     public void updateUiValues(int position) {
+
+
+        if (yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Sick leave")) {
+            txtAttachment.setVisibility(View.VISIBLE);
+            thumbnail.setVisibility(View.VISIBLE);
+            editAttachment.setVisibility(View.VISIBLE);
+            btnAttachment.setVisibility(View.VISIBLE);
+        } else{
+            txtAttachment.setVisibility(View.GONE);
+            editAttachment.setVisibility(View.GONE);
+            thumbnail.setVisibility(View.GONE);
+            btnAttachment.setVisibility(View.GONE);
+        }
+
         if (!(yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Unpaid leave") || yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Time-In-Lieu leave"))) {
             editEntitlement.setVisibility(View.VISIBLE);
             txtEntitlement.setVisibility(View.VISIBLE);
             editEntitlement.setText(String.valueOf(yearlyEntitlementList.get(position).getEntitlement()));
-        } else {
+
+            editYearlyLeaveBal.setVisibility(View.VISIBLE);
+            txtYearlyLeaveBal.setVisibility(View.VISIBLE);
+            editYearlyLeaveBal.setText(String.valueOf(yearlyEntitlementList.get(position).getYearlyLeaveBalance()));
+
+        } else{
             editEntitlement.setVisibility(View.GONE);
             txtEntitlement.setVisibility(View.GONE);
+
+            editYearlyLeaveBal.setVisibility(View.GONE);
+            txtYearlyLeaveBal.setVisibility(View.GONE);
+
         }
 
         if (yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Annual leave")) {
@@ -398,24 +427,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
             txtCurrentLeaveBal.setVisibility(View.GONE);
         }
 
-        if (!(yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Unpaid leave") || yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Time-In-Lieu leave"))) {
-            editYearlyLeaveBal.setVisibility(View.VISIBLE);
-            txtYearlyLeaveBal.setVisibility(View.VISIBLE);
-            editYearlyLeaveBal.setText(String.valueOf(yearlyEntitlementList.get(position).getYearlyLeaveBalance()));
-        } else {
-            editYearlyLeaveBal.setVisibility(View.GONE);
-            txtYearlyLeaveBal.setVisibility(View.GONE);
-        }
-
-        if (yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Sick leave")) {
-            txtAttachment.setVisibility(View.VISIBLE);
-            editAttachment.setVisibility(View.VISIBLE);
-            btnAttachment.setVisibility(View.VISIBLE);
-        } else{
-            txtAttachment.setVisibility(View.GONE);
-            editAttachment.setVisibility(View.GONE);
-            btnAttachment.setVisibility(View.GONE);
-        }
     }
 
     public Double getAllowedMaximumLeaves() {

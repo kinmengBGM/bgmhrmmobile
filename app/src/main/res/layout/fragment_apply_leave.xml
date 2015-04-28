@@ -6,13 +6,13 @@
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:fillViewport="true"
-        android:padding="15dp">
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="@dimen/padding_form">
 
             <TextView
                 android:id="@+id/leaveType"
@@ -25,7 +25,8 @@
                 android:id="@+id/editLeaveType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center" />
+                android:layout_gravity="center"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
 
 
             <TextView
@@ -39,6 +40,7 @@
                 android:id="@+id/editEntitlement"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
                 android:clickable="false"
                 android:editable="false"
                 android:enabled="false" />
@@ -54,6 +56,7 @@
                 android:id="@+id/editCurrentLeaveBal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
                 android:clickable="false"
                 android:editable="false"
                 android:enabled="false" />
@@ -70,6 +73,7 @@
                 android:id="@+id/editYearlyLeaveBal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
                 android:clickable="false"
                 android:editable="false"
                 android:enabled="false" />
@@ -82,12 +86,29 @@
                 android:text="*Start Date: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <EditText
-                android:id="@+id/editStartDate"
+            <RelativeLayout
+                android:id="@+id/rowStartDate"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:focusable="false" />
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
+                android:orientation="horizontal">
 
+
+                <EditText
+                    android:id="@+id/editStartDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false" />
+
+                <ImageView
+                    android:id="@+id/calendar1"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="5dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/icon_calendar" />
+
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/endDate"
@@ -96,12 +117,27 @@
                 android:text="*End Date: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <EditText
-                android:id="@+id/editEndDate"
+            <RelativeLayout
+                android:id="@+id/rowEndDate"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:focusable="false" />
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
+                android:orientation="horizontal">
 
+                <EditText
+                    android:id="@+id/editEndDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false" />
+
+                <ImageView
+                    android:id="@+id/calendar2"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="5dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/icon_calendar" />
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/numberOfDays"
@@ -113,7 +149,8 @@
             <EditText
                 android:id="@+id/editNoOfDays"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom" />
 
             <TextView
                 android:id="@+id/reason"
@@ -126,7 +163,10 @@
                 android:id="@+id/editReason"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textMultiLine" />
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
+                android:inputType="textMultiLine"
+                android:lines="4"/>
+
 
             <TextView
                 android:id="@+id/attachment"
@@ -135,33 +175,50 @@
                 android:text="*Sick Leave Attachment: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <EditText
-                android:id="@+id/editAttachment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="false"
-                android:editable="false"
-                android:enabled="false"  />
-
-            <ImageView
+            <LinearLayout
+                android:id="@+id/rowSickLeave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/thumbnailAttachment"
-                android:layout_gravity="center_horizontal" />
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
+                android:orientation="horizontal"
+                android:weightSum="1">
 
-            <Button
-                android:id="@+id/btnAttachment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:text="Attach file" />
+                <ImageView
+                    android:id="@+id/thumbnailAttachment"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginRight="10dp"
+                    android:src="@drawable/icon_no_image" />
+
+                <EditText
+                    android:id="@+id/editAttachment"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="false"
+                    android:editable="false"
+                    android:enabled="false" />
+
+                <ImageButton
+                    android:id="@+id/btnAttachment"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="10dp"
+                    android:adjustViewBounds="true"
+                    android:background="@drawable/view_blue"
+                    android:padding="5dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/icon_attachment" />
+
+            </LinearLayout>
 
             <Button
                 android:id="@+id/btnApplyLeave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:text="Apply Leave" />
+                android:text="Apply Leave"
+                android:visibility="visible" />
 
         </LinearLayout>
     </ScrollView>

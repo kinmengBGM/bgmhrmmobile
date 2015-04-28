@@ -20,7 +20,7 @@
         android:paddingTop="5dp"
         android:paddingLeft="20dp"
         android:singleLine="true"
-        android:textColor="@color/edittext"
+        android:textColor="@color/text_drawertext"
         android:textSize="15dp" />
 
 </LinearLayout>

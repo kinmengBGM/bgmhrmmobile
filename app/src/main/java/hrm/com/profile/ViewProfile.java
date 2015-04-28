@@ -68,6 +68,8 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
     public void onResume(){
         super.onResume();
         setHasOptionsMenu(true);
+        PopulateAddressTask populateAddressTask = new PopulateAddressTask();
+        populateAddressTask.execute();
         ((HomeActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ((HomeActivity)getActivity()).getSupportActionBar().setTitle("View Profile");
@@ -144,7 +146,8 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
                         ((HomeActivity)getActivity()).setAddressId(addressId);
                         listener.onEditAddressInfo();
                     } else if (item == 1) {
-                        Toast.makeText(getActivity().getApplicationContext(), "DELETE", Toast.LENGTH_SHORT).show();
+                        DeleteAddressTask deleteAddressTask = new DeleteAddressTask();
+                        deleteAddressTask.execute();
                     }
                 }
             });
@@ -243,6 +246,48 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
             return result;
         }
     }
+
+
+    private class DeleteAddressTask extends AsyncTask<String, Void, Address> {
+
+        @Override
+        protected void onPostExecute(Address deletedAddress) {
+            super.onPostExecute(deletedAddress);
+
+            Toast.makeText(getActivity().getApplicationContext(), "Address deleted", Toast.LENGTH_SHORT).show();
+            PopulateAddressTask repopulate = new PopulateAddressTask();
+            repopulate.execute();
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Address doInBackground(String... params) {
+            return onDeleteSelected();
+        }
+
+        public Address onDeleteSelected(){
+            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/address/delete?id={addressId}";
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            String plainCreds = username + ":" + password;
+            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
+            headers.add("Authorization", "Basic " + base64EncodedCredentials);
+
+            // Add the String message converter
+            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+
+            HttpEntity<String> request = new HttpEntity<String>(headers);
+            ResponseEntity<Address> response = restTemplate.exchange(url, HttpMethod.GET, request, Address.class, addressId);
+            Address deletedAddress = response.getBody();
+            return deletedAddress;
+        }
+    }
+
 
 
 }

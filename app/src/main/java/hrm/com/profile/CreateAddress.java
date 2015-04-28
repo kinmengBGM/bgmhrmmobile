@@ -73,7 +73,6 @@ public class CreateAddress extends Fragment {
         this.password = ((HomeActivity) getActivity()).getPassword();
         this.employee = ((HomeActivity) getActivity()).getActiveEmployee();
         this.user = ((HomeActivity) getActivity()).getActiveUser();
-        Toast.makeText(getActivity().getApplicationContext(), user.getUsername(), Toast.LENGTH_SHORT).show();
         newAddress = new Address();
         initLayout(rootView);
 
@@ -122,7 +121,7 @@ public class CreateAddress extends Fragment {
                 addAddressToEmployee();
                 CreateAddressTask update = new CreateAddressTask();
                 update.execute();
-                Toast.makeText(getActivity().getApplicationContext(), "Address Updated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplicationContext(), "Address Created", Toast.LENGTH_SHORT).show();
 
                 newAddressMap = new HashMap<Integer, Address>();
                 existingAddressList = null;

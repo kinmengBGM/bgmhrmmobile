@@ -2,6 +2,7 @@
     android:layout_width="match_parent" android:layout_height="wrap_content"
     android:id="@+id/swipeLayout">
     <!-- Bottom View Start-->
+
     <LinearLayout
         android:background="#66ddff00"
         android:id="@+id/bottom_wrapper"
@@ -10,22 +11,32 @@
         android:weightSum="1">
 
         <ImageView
-            android:id="@+id/rejectView"
-            android:src="@drawable/icon_work"
+            android:id="@+id/sickLeaveAttachment"
+            android:src="@drawable/icon_attachment"
             android:layout_width="70dp"
             android:layout_height="match_parent"
-            android:background="@drawable/red_view"
-            android:paddingLeft="25dp"
-            android:paddingRight="25dp"/>
+            android:background="@drawable/view_blue"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"/>
+
+        <ImageView
+            android:id="@+id/rejectView"
+            android:src="@drawable/icon_reject"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/view_red"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"/>
 
         <ImageView
             android:id="@+id/approveView"
-            android:src="@drawable/icon_profile"
+            android:src="@drawable/icon_approve"
             android:layout_width="70dp"
             android:layout_height="match_parent"
-            android:background="#4cd964"
-            android:paddingLeft="25dp"
-            android:paddingRight="25dp"/>
+            android:background="@drawable/view_green"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"/>
+
     </LinearLayout>
     <!-- Bottom View End-->
 

@@ -45,7 +45,6 @@ import hrm.com.profile.ViewProfile;
 public class HomeActivity extends ActionBarActivity {
 
     //User info
-    private int userId;
     private int addressId;
     private String username;
     private String password;
@@ -74,7 +73,6 @@ public class HomeActivity extends ActionBarActivity {
 
         setContentView(R.layout.activity_home);
         Intent intent = getIntent();
-        this.userId = intent.getIntExtra("userId", 0);
         this.username = intent.getStringExtra("username");
         this.password = intent.getStringExtra("password");
         this.activeEmployee = (Employee) intent.getSerializableExtra("employee");
@@ -85,7 +83,7 @@ public class HomeActivity extends ActionBarActivity {
 
         //Don't show title when drawer is opened
         //mTitle = mDrawerTitle = getTitle();
-      /*  title = new String[] { "Home", "My Profile", "Apply Leave", "Leave History", "Upcoming Leaves", "Leave Approval"};
+        /*title = new String[] { "Home", "My Profile", "Apply Leave", "Leave History", "Upcoming Leaves", "Leave Approval"};
         icon = new int[] {R.drawable.icon_home, R.drawable.icon_profile, R.drawable.icon_work, R.drawable.icon_admin, R.drawable.icon_admin, R.drawable.icon_admin};
 */
 
@@ -243,7 +241,7 @@ public class HomeActivity extends ActionBarActivity {
                     fragmentStack.push(currentFrag);
                     break;
                 case "Apply Leave":
-                    currentFrag=new ApplyLeave();
+                    currentFrag= new ApplyLeave();
                     break;
                 case "Leave History":
                     currentFrag= new LeaveHistory();

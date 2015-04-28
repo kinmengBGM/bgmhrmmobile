@@ -12,6 +12,7 @@ import com.daimajia.swipe.adapters.ArraySwipeAdapter;
 import java.util.List;
 
 import hrm.com.custom.listener.ApproveLeaveListener;
+import hrm.com.custom.listener.ViewSickLeaveAttachmentListener;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.LeaveTransaction;
 
@@ -23,13 +24,15 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction>{
     private Context context;
     private List<LeaveTransaction> approveLeaveList;
     private ApproveLeaveListener listener;
+    private ViewSickLeaveAttachmentListener sListener;
 
 
-    public ApproveLeaveAdapter(Context context, int resource, List<LeaveTransaction> approveLeaveList, ApproveLeaveListener listener) {
+    public ApproveLeaveAdapter(Context context, int resource, List<LeaveTransaction> approveLeaveList, ApproveLeaveListener listener, ViewSickLeaveAttachmentListener sListener) {
         super(context, resource, approveLeaveList);
         this.context = context;
         this.approveLeaveList = approveLeaveList;
         this.listener = listener;
+        this.sListener = sListener;
     }
 
     @Override
@@ -55,6 +58,19 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction>{
         numberOfDays.setText("Number of Days: " + leaveTransaction.getNumberOfDays().toString());
         reason.setText("Reason: " + leaveTransaction.getReason());
         dates.setText(leaveTransaction.fetchStartTimeStr() + " to " + leaveTransaction.fetchEndTimeStr());
+
+        final ImageView sickLeaveAttachment = (ImageView)v.findViewById(R.id.sickLeaveAttachment);
+        if((leaveTransaction.getLeaveType().getDescription()).equals("Sick leave"))
+            sickLeaveAttachment.setVisibility(View.VISIBLE);
+        else
+            sickLeaveAttachment.setVisibility(View.GONE);
+
+        sickLeaveAttachment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sListener.onViewAttachment(leaveTransaction);
+            }
+        });
 
         ImageView btnReject = (ImageView)v.findViewById(R.id.rejectView);
         btnReject.setOnClickListener(new View.OnClickListener() {

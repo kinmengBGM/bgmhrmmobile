@@ -31,9 +31,11 @@ import java.util.Set;
 import hrm.com.custom.adapter.ApproveLeaveAdapter;
 import hrm.com.custom.enums.Leave;
 import hrm.com.custom.fragment.RejectLeaveDialog;
+import hrm.com.custom.fragment.SickLeaveDialog;
 import hrm.com.custom.listener.ApproveLeaveListener;
 import hrm.com.custom.listener.RejectLeaveListener;
 import hrm.com.custom.listener.TaskListener;
+import hrm.com.custom.listener.ViewSickLeaveAttachmentListener;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.LeaveFlowDecisionsTaken;
@@ -205,6 +207,7 @@ public class ApproveLeaveTaskList extends Fragment {
                     setInsertDeleted(true);
                 }
             });
+            getLeaveTransactionTask.execute();
        /* } catch (BSLException e) {
             //FacesMessage msg = new FacesMessage("Error : "+getExcptnMesProperty(e.getMessage()),"Leave approve error");
             //msg.setSeverity(FacesMessage.SEVERITY_INFO);
@@ -298,10 +301,16 @@ public class ApproveLeaveTaskList extends Fragment {
                 Toast.makeText(getActivity().getApplicationContext(), "APPROVE " +leaveTransactionId, Toast.LENGTH_SHORT).show();
                 doApproveLeaveRequest();
             }
+        }, new ViewSickLeaveAttachmentListener() {
+            @Override
+            public void onViewAttachment(LeaveTransaction attachment){
+                //TODO: Open pdf viewer
+                SickLeaveDialog sickLeaveDialog = new SickLeaveDialog(attachment.getSickLeaveAttachment());
+                sickLeaveDialog.show(getActivity().getSupportFragmentManager(), "AttachmentDialog");
+            }
         });
         lView.setAdapter(adpt);
     }
-
 
     private class PopulateApproveLeaveTaskList extends AsyncTask<String, Void, List<LeaveTransaction>> {
 
@@ -311,8 +320,13 @@ public class ApproveLeaveTaskList extends Fragment {
 
             if (result.size() > 0) {
                 setApproveLeaveList(result);
+
+                //Debugging
+              /*  for(LeaveTransaction x: result)
+                    Toast.makeText(getActivity().getApplicationContext(), String.valueOf(x.getId()), Toast.LENGTH_SHORT).show();*/
+
                 setApproveLeaveList();
-            } else {
+                } else {
                 noLeaveHistory.setText("No leaves to be approved");
             }
         }

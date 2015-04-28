@@ -2,8 +2,13 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+
     <dimen name="padding_textbox">10dp</dimen>
     <dimen name="padding_textbox_icon">40dp</dimen>
+    <dimen name="margin_textbox_bottom">15dp</dimen>
+
+    <dimen name="padding_form">15dp</dimen>
+
     <dimen name="padding_login_frame">25dp</dimen>
     <dimen name="margin_login_frame_tb">60dp</dimen>
     <dimen name="margin_login_frame_lr">25dp</dimen>
