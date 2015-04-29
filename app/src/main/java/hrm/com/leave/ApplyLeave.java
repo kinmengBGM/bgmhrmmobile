@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,7 +53,6 @@ import hrm.com.custom.fragment.SickLeaveAttachmentDialog;
 import hrm.com.custom.listener.DatePickerListener;
 import hrm.com.custom.listener.SickLeaveAttachmentListener;
 import hrm.com.custom.listener.TaskListener;
-import hrm.com.hrmprototype.Fragment1;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.Employee;
@@ -148,6 +146,8 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         View rootView = inflater.inflate(R.layout.fragment_apply_leave, container, false);
         initLayout(rootView);
 
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Apply Leave");
 
         this.username = ((HomeActivity) getActivity()).getUsername();
         this.password = ((HomeActivity) getActivity()).getPassword();
@@ -261,8 +261,8 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
                     e.printStackTrace();
                     Toast.makeText(getActivity().getApplicationContext(), "Error processing leave application", Toast.LENGTH_SHORT).show();
                 }
-                FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
-                fm.replace(R.id.content_frame,new Fragment1()).commit();
+
+                ((HomeActivity)getActivity()).switchFragment("home");
                 break;
         }
 
@@ -390,14 +390,16 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
         if (yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Sick leave")) {
             txtAttachment.setVisibility(View.VISIBLE);
-            thumbnail.setVisibility(View.VISIBLE);
-            editAttachment.setVisibility(View.VISIBLE);
-            btnAttachment.setVisibility(View.VISIBLE);
+            sickLeaveRow.setVisibility(View.VISIBLE);
+//            thumbnail.setVisibility(View.VISIBLE);
+//            editAttachment.setVisibility(View.VISIBLE);
+//            btnAttachment.setVisibility(View.VISIBLE);
         } else{
             txtAttachment.setVisibility(View.GONE);
-            editAttachment.setVisibility(View.GONE);
-            thumbnail.setVisibility(View.GONE);
-            btnAttachment.setVisibility(View.GONE);
+            sickLeaveRow.setVisibility(View.GONE);
+//            editAttachment.setVisibility(View.GONE);
+//            thumbnail.setVisibility(View.GONE);
+//            btnAttachment.setVisibility(View.GONE);
         }
 
         if (!(yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Unpaid leave") || yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Time-In-Lieu leave"))) {
@@ -715,8 +717,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
             super.onPostExecute(result);
 
             yearlyEntitlementList = result;
-            // Toast.makeText(getActivity().getApplicationContext(), leaveTypeList.size(), Toast.LENGTH_SHORT).show();
-
             ArrayAdapter<YearlyEntitlement> spinnerAdapter = new ArrayAdapter<YearlyEntitlement>(getActivity().getApplicationContext(), android.R.layout.simple_spinner_item, yearlyEntitlementList);
             spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             editLeaveType.setAdapter(spinnerAdapter);

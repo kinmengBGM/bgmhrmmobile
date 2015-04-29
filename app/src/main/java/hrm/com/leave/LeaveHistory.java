@@ -59,6 +59,10 @@ public class LeaveHistory extends Fragment{
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
 
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Leave History");
+
+
         this.username = ((HomeActivity) getActivity()).getUsername();
         this.password = ((HomeActivity) getActivity()).getPassword();
         this.user = ((HomeActivity) getActivity()).getActiveUser();

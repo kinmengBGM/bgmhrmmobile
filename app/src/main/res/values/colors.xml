@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="base_orange">#dc4e00</color>
+
+    <color name="text_homeHeader">#ffffff</color>
+
     <color name="background_color">#f4f5ed</color>
     <color name="buttonText">#ffffff</color>
     <color name="buttonBackground">#dc4e00</color>

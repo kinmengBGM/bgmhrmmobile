@@ -5,17 +5,10 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_logged_in">LoggedIn</string>
 
+    <string name="no_approve_leave">No leaves to be approved</string>
+    <string name="no_upcoming_leave">No upcoming leaves</string>
 
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
-    <string name="title_activity_logged_main">LoggedMainActivity</string>
 
-    <string-array name="navdrawer_titles">
-        <item>My Profile</item>
-        <item>My Leave</item>
-        <item>Leave Management</item>
-    </string-array>
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>

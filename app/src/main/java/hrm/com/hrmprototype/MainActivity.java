@@ -5,23 +5,16 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Base64;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import hrm.com.model.Employee;
 import hrm.com.model.Users;
+import hrm.com.webservice.Login;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -34,6 +27,7 @@ public class MainActivity extends ActionBarActivity {
     private String YOUR_USERNAME;
     private String YOUR_PASSWORD;
 
+    private Login newLogin;
     private int userId;
 
     @Override
@@ -47,57 +41,30 @@ public class MainActivity extends ActionBarActivity {
 
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                webService web = new webService();
-                web.execute();
+                YOUR_USERNAME = username.getText().toString();
+                YOUR_PASSWORD = password.getText().toString();
+                newLogin = new Login(YOUR_USERNAME, YOUR_PASSWORD);
+                GetUserTask getUserTask = new GetUserTask();
+                getUserTask.execute();
             }
         });
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        return super.onOptionsItemSelected(item);
-    }
-
-    private class webService extends AsyncTask<String, Void, String> {
+    private class GetUserTask extends AsyncTask<String, Void, Users> {
 
         @Override
-        protected String doInBackground(String... s) {
-
-            // Create a new RestTemplate instance
-
+        protected Users doInBackground(String... s) {
             try {
-                YOUR_USERNAME = username.getText().toString();
-                YOUR_PASSWORD = password.getText().toString();
-                String YOUR_URL = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/users/findUsersByUsername?username={YOUR_USERNAME}";
-                RestTemplate restTemplate = new RestTemplate();
-
-                HttpHeaders headers = new HttpHeaders();
-                String plainCreds = YOUR_USERNAME + ":" + YOUR_PASSWORD;
-                String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-                headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-                // Add the String message converter
-                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-                HttpEntity<String> request = new HttpEntity<String>(headers);
-                ResponseEntity<Users[]> response = restTemplate.exchange(YOUR_URL, HttpMethod.GET, request, Users[].class, YOUR_USERNAME);
-                Users[] user = response.getBody();
-                activeUser = user[0];
-                userId = user[0].getId();
-                return "Logged in as " + user[0].getUsername();
-            } catch (HttpClientErrorException e) {
+                return newLogin.getUser();
+            }catch(HttpClientErrorException e){
                 return null;
             }
-
         }
 
         @Override
-        protected void onPostExecute(String results) {
+        protected void onPostExecute(Users results) {
             if (results != null) {
+                activeUser = results;
                 GetEmployeeTask getEmployee = new GetEmployeeTask();
                 getEmployee.execute();
             } else {
@@ -108,35 +75,17 @@ public class MainActivity extends ActionBarActivity {
 
     private class GetEmployeeTask extends AsyncTask<String, Void, Employee> {
         private final ProgressDialog dialog = new ProgressDialog(MainActivity.this);
-        private Employee activeEmployee;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Logging in...");
             dialog.show();
-            activeEmployee = new Employee();
         }
 
         @Override
         protected Employee doInBackground(String... params) {
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/employee/findByUserId?userId={id}";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = YOUR_USERNAME + ":" + YOUR_PASSWORD;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<Employee> response = restTemplate.exchange(url, HttpMethod.GET, request, Employee.class, userId);
-            activeEmployee = response.getBody();
-
-            return activeEmployee;
+            return newLogin.getEmployee(activeUser.getId());
         }
 
         @Override
@@ -150,7 +99,6 @@ public class MainActivity extends ActionBarActivity {
             intent.putExtra("employee", result);
             startActivity(intent);
         }
-
     }
 
 }

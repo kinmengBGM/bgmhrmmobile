@@ -52,6 +52,7 @@ public class HomeActivity extends ActionBarActivity {
     private Users activeUser;
     //private List<Address> existingAddressList;
     private List<String> userRoles;
+    boolean hasHomeAccess = false, hasProfileAccess = false, hasApplyLeaveAccess = false, hasLeaveHistoryAccess= false, hasUpcomingLeaveAccess = false, hasLeaveApprovalAccess = false;
 
     // Declare Variables
     DrawerLayout mDrawerLayout;
@@ -77,6 +78,7 @@ public class HomeActivity extends ActionBarActivity {
         this.password = intent.getStringExtra("password");
         this.activeEmployee = (Employee) intent.getSerializableExtra("employee");
         this.activeUser = (Users) intent.getSerializableExtra("user");
+
 
         GetUserRole getRoles = new GetUserRole();
         getRoles.execute();
@@ -129,6 +131,14 @@ public class HomeActivity extends ActionBarActivity {
 
     }
 
+    public boolean getHasUpcomingLeaveAccess(){
+        return hasUpcomingLeaveAccess;
+    }
+
+    public boolean getHasLeaveApprovalAccess(){
+        return hasLeaveApprovalAccess;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -161,101 +171,128 @@ public class HomeActivity extends ActionBarActivity {
         }
     }
 
+    public void switchFragment(String name){
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        if(currentFrag!=null)
+            ft.remove(currentFrag);
+
+        if(!fragmentStack.empty())//resets stack size
+            fragmentStack.pop();
+
+        switch(name){
+            case "home":
+                currentFrag= new HomeFragment();
+                break;
+            case "profile":
+                currentFrag= ViewProfile.newInstance(new ProfileFragmentChangeListener() {
+                    @Override
+                    public void onEditBasicInfo() {
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                        Fragment editBasic = new EditBasicDetails();
+                        transaction.add(R.id.content_frame, editBasic);
+                        fragmentStack.lastElement().onPause();
+                        transaction.hide(fragmentStack.lastElement());
+                        fragmentStack.push(editBasic);
+                        transaction.commit();
+
+                    }
+
+                    @Override
+                    public void onEditContactInfo() {
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                        Fragment editContact = new EditContactInfo();
+                        transaction.add(R.id.content_frame, editContact);
+                        fragmentStack.lastElement().onPause();
+                        transaction.hide(fragmentStack.lastElement());
+                        fragmentStack.push(editContact);
+                        transaction.commit();
+                    }
+
+                    @Override
+                    public void onEditAddressInfo() {
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                        Fragment editAddress = new EditAddress();
+                        transaction.add(R.id.content_frame, editAddress);
+                        fragmentStack.lastElement().onPause();
+                        transaction.hide(fragmentStack.lastElement());
+                        fragmentStack.push(editAddress);
+                        transaction.commit();
+                    }
+
+                    @Override
+                    public void onCreateAddress() {
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                        Fragment createAddress = new CreateAddress();
+                        transaction.add(R.id.content_frame, createAddress);
+                        fragmentStack.lastElement().onPause();
+                        transaction.hide(fragmentStack.lastElement());
+                        fragmentStack.push(createAddress);
+                        transaction.commit();
+                    }
+
+                    @Override
+                    public void onEditWorkInfo() {
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                        Fragment editWork = new EditWorkInfo();
+                        transaction.add(R.id.content_frame, editWork);
+                        fragmentStack.lastElement().onPause();
+                        transaction.hide(fragmentStack.lastElement());
+                        fragmentStack.push(editWork);
+                        transaction.commit();
+                    }
+                });
+                fragmentStack.push(currentFrag);
+                break;
+            case "applyleave":
+                currentFrag= new ApplyLeave();
+                break;
+            case "leavehistory":
+                currentFrag= new LeaveHistory();
+                break;
+            case "upcomingleave":
+                currentFrag= new UpcomingLeave();
+                break;
+            case "leaveapproval":
+                currentFrag=new ApproveLeaveTaskList();
+                break;
+        }
+
+        ft.replace(R.id.content_frame, currentFrag);
+        ft.commit();
+
+    }
+
     private void selectItem(int position) {
         DrawerItem drawerItem = mMenuAdapter.getItem(position);
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
         if(drawerItem.getViewType() == mMenuAdapter.getItemViewType(0)){ //if drawerItem is ListItem
 
-            if(currentFrag!=null)
-                ft.remove(currentFrag);
-
             switch (drawerItem.getTitle()) {
                 case "Home":
-                    currentFrag= new Fragment1();
+                    switchFragment("home");
                     break;
                 case "My Profile":
-                    currentFrag= ViewProfile.newInstance(new ProfileFragmentChangeListener() {
-                        @Override
-                        public void onEditBasicInfo() {
-                            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-                            Fragment editBasic = new EditBasicDetails();
-                            transaction.add(R.id.content_frame, editBasic);
-                            fragmentStack.lastElement().onPause();
-                            transaction.hide(fragmentStack.lastElement());
-                            fragmentStack.push(editBasic);
-                            transaction.commit();
-
-                        }
-
-                        @Override
-                        public void onEditContactInfo() {
-                            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-                            Fragment editContact = new EditContactInfo();
-                            transaction.add(R.id.content_frame, editContact);
-                            fragmentStack.lastElement().onPause();
-                            transaction.hide(fragmentStack.lastElement());
-                            fragmentStack.push(editContact);
-                            transaction.commit();
-                        }
-
-                        @Override
-                        public void onEditAddressInfo() {
-                            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-                            Fragment editAddress = new EditAddress();
-                            transaction.add(R.id.content_frame, editAddress);
-                            fragmentStack.lastElement().onPause();
-                            transaction.hide(fragmentStack.lastElement());
-                            fragmentStack.push(editAddress);
-                            transaction.commit();
-                        }
-
-                        @Override
-                        public void onCreateAddress() {
-                            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-                            Fragment createAddress = new CreateAddress();
-                            transaction.add(R.id.content_frame, createAddress);
-                            fragmentStack.lastElement().onPause();
-                            transaction.hide(fragmentStack.lastElement());
-                            fragmentStack.push(createAddress);
-                            transaction.commit();
-                        }
-
-                        @Override
-                        public void onEditWorkInfo() {
-                            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-                            Fragment editWork = new EditWorkInfo();
-                            transaction.add(R.id.content_frame, editWork);
-                            fragmentStack.lastElement().onPause();
-                            transaction.hide(fragmentStack.lastElement());
-                            fragmentStack.push(editWork);
-                            transaction.commit();
-                        }
-
-                    });
-                    fragmentStack.push(currentFrag);
+                    switchFragment("profile");
                     break;
                 case "Apply Leave":
-                    currentFrag= new ApplyLeave();
+                    switchFragment("applyleave");
                     break;
                 case "Leave History":
-                    currentFrag= new LeaveHistory();
+                    switchFragment("leavehistory");
                     break;
                 case "Upcoming Leaves":
-                    currentFrag= new UpcomingLeave();
+                    switchFragment("upcomingleave");
                     break;
                 case "Leave Approval":
-                    currentFrag=new ApproveLeaveTaskList();
+                    switchFragment("leaveapproval");
                     break;
             }
         }
-        ft.replace(R.id.content_frame, currentFrag);
-        ft.commit();
         mDrawerList.setItemChecked(position, true);
         // Get the title followed by the position
         setTitle(drawerItems.get(position).getTitle());
@@ -288,7 +325,7 @@ public class HomeActivity extends ActionBarActivity {
 
         if (fragmentStack.size() == 2) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            fragmentStack.lastElement().onDestroy();
+            fragmentStack.lastElement().onPause();
             ft.remove(fragmentStack.pop());
             fragmentStack.lastElement().onResume();
             ft.show(fragmentStack.lastElement());
@@ -304,7 +341,6 @@ public class HomeActivity extends ActionBarActivity {
         protected void onPostExecute(List<String> result) {
             userRoles = result;
 
-            boolean hasHomeAccess = false, hasProfileAccess = false, hasApplyLeaveAccess = false, hasLeaveHistoryAccess= false, hasUpcomingLeaveAccess = false, hasLeaveApprovalAccess = false;
             for(String x:userRoles){
                 if(Access.HOME.hasAccess(x))
                    hasHomeAccess = true;
@@ -335,6 +371,7 @@ public class HomeActivity extends ActionBarActivity {
 
             selectItem(0);
             mMenuAdapter.notifyDataSetChanged();
+
         }
 
         @Override

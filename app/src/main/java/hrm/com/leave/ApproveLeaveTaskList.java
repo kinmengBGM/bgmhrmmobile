@@ -89,6 +89,9 @@ public class ApproveLeaveTaskList extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_approve_leave_list, container, false);
 
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Leave Approval");
+
         this.username = ((HomeActivity) getActivity()).getUsername();
         this.password = ((HomeActivity) getActivity()).getPassword();
         this.user = ((HomeActivity) getActivity()).getActiveUser();
@@ -575,7 +578,7 @@ public class ApproveLeaveTaskList extends Fragment {
         @Override
         protected YearlyEntitlement doInBackground(String... params) {
             // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/yearlyEntitlement/findByEmployeeAndLeaveType?employeeId={employeeId}&leaveTypeId={leaveTypeId}";
+            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/yearlyEntitlement/findByEmployeeAndLeaveType?employeeId={employeeId}&leaveTypeId={leaveTypeId}";
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
@@ -586,8 +589,8 @@ public class ApproveLeaveTaskList extends Fragment {
             // Add the String message converter
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
 
-            HttpEntity request = new HttpEntity(selectedLeaveRequest, headers);
-            ResponseEntity<YearlyEntitlement> response = restTemplate.exchange(url, HttpMethod.POST, request, YearlyEntitlement.class, employeeId, leaveTypeId);
+            HttpEntity request = new HttpEntity(headers);
+            ResponseEntity<YearlyEntitlement> response = restTemplate.exchange(url, HttpMethod.GET, request, YearlyEntitlement.class, employeeId, leaveTypeId);
 
             return response.getBody();
         }
@@ -598,8 +601,12 @@ public class ApproveLeaveTaskList extends Fragment {
 
         @Override
         protected void onPostExecute(Boolean result) {
-            Toast.makeText(getActivity().getApplicationContext(), "LEAVE REJECTED", Toast.LENGTH_SHORT).show();
-            rej.dismiss();
+            if(result)
+                Toast.makeText(getActivity().getApplicationContext(), "Leave Approved", Toast.LENGTH_SHORT).show();
+            else{
+                Toast.makeText(getActivity().getApplicationContext(), "Leave Rejected", Toast.LENGTH_SHORT).show();
+                rej.dismiss();
+            }
             PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
             repopulate.execute();
         }
