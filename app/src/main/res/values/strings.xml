@@ -7,8 +7,8 @@
 
     <string name="no_approve_leave">No leaves to be approved</string>
     <string name="no_upcoming_leave">No upcoming leaves</string>
-
-
+    <string name="no_leave_history">No leave history</string>
+    <string name="no_address">No address added</string>
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>

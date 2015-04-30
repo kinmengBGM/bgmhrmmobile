@@ -48,12 +48,14 @@ public class LeaveAdapter extends BaseExpandableListAdapter {
             convertView = infalInflater.inflate(R.layout.item_row_leave_child, null);
         }
 
+        TextView txtDates = (TextView) convertView
+                .findViewById(R.id.txtLeaveDates);
         TextView txtLeaveType = (TextView) convertView
                 .findViewById(R.id.txtLeaveType);
         TextView txtNoOfDays = (TextView) convertView
                 .findViewById(R.id.txtNoOfDays);
 
-
+        txtDates.setText(child.fetchStartTimeStr() + " to " + child.fetchEndTimeStr());
         txtLeaveType.setText(child.getLeaveType().getDescription());
         txtNoOfDays.setText(child.getNumberOfDays().toString() + " days");
         return convertView;
@@ -91,9 +93,7 @@ public class LeaveAdapter extends BaseExpandableListAdapter {
 
         TextView reason = (TextView) convertView.findViewById(R.id.reason);
         TextView status = (TextView) convertView.findViewById(R.id.status);
-        TextView dates = (TextView) convertView.findViewById(R.id.dates);
 
-        dates.setText(head.fetchStartTimeStr() + " to " + head.fetchEndTimeStr());
         reason.setText(head.getReason());
 
         if (head.getStatus().equals("Approved")) status.setTextColor(Color.parseColor("#00a208"));

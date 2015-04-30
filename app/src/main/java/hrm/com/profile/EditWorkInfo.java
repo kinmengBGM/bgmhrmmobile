@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.springframework.http.HttpEntity;
@@ -29,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import hrm.com.custom.fragment.DatePickerFragment;
+import hrm.com.custom.listener.DatePickerListener;
 import hrm.com.custom.listener.TaskListener;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
@@ -40,7 +43,7 @@ import hrm.com.wrapper.UpdateEmployeeWrapper;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelectedListener, TaskListener {
+public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelectedListener, TaskListener, View.OnClickListener {
 
     private Employee employee;
     private Users user;
@@ -79,8 +82,9 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
         View rootView = inflater.inflate(R.layout.fragment_edit_work_info, container, false);
 
         ((HomeActivity) getActivity()).enableNavigationDrawer(false);
-        //((HomeActivity)getActivity()).getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);
         ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Edit Basic Info");
+        ((HomeActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((HomeActivity) getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         setHasOptionsMenu(true);
 
         employee = ((HomeActivity) getActivity()).getActiveEmployee();
@@ -128,9 +132,9 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
         editEmployeeType.setOnItemSelectedListener(this);
         editDepartment.setOnItemSelectedListener(this);
         editGrade.setOnItemSelectedListener(this);
-/*
+
         editJoinDate.setOnClickListener(this);
-        editResDate.setOnClickListener(this);*/
+        editResDate.setOnClickListener(this);
     }
 
     public void initValues() {
@@ -192,50 +196,77 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
 
     }
 
-
-    private class UpdateProfileTask extends AsyncTask<String, Void, Employee> {
-
-        private UpdateEmployeeWrapper updateEmployeeWrapper;
-        private Employee toUpdateEmployee;
-        private HashMap<Integer, Address> newAddressMap;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            newAddressMap = new HashMap<Integer, Address>();
-            toUpdateEmployee = new Employee();
-            toUpdateEmployee = employee;
-
-            toUpdateEmployee.setEmployeeNumber(editEmployeeNo.getText().toString());
-            toUpdateEmployee.setPosition(editPosition.getText().toString());
-
-            updateEmployeeWrapper = new UpdateEmployeeWrapper(toUpdateEmployee, grade, employeeType, department, null, existingAddress, newAddressMap);
-        }
-
-        @Override
-        protected void onPostExecute(Employee result) {
-            onTaskCompleted();
-        }
+    @Override
+    public void onClick(View v) {
 
 
-       @Override
-        protected Employee doInBackground(String... params) {
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/employee/updateEmployee";
-            RestTemplate restTemplate = new RestTemplate();
+        switch (v.getId()) {
+            case R.id.editJoinDate:
+            case R.id.editResDate:
 
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
+                final TextView activeTextView;
 
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+                if (v.getId() == R.id.editJoinDate)
+                    activeTextView = editJoinDate;
+                else
+                    activeTextView = editResDate;
 
-            HttpEntity request = new HttpEntity(updateEmployeeWrapper, headers);
-            ResponseEntity<Employee> response = restTemplate.exchange(url, HttpMethod.POST, request, Employee.class);
-            return response.getBody();
+                DatePickerFragment dialog = new DatePickerFragment(new DatePickerListener() {
+                    @Override
+                    public void onDateSelected(String date) {
+                        activeTextView.setText(date);
+                    }
+                });
+
+                dialog.show(getActivity().getSupportFragmentManager(), "MyDatePickerDialog");
+            break;
         }
     }
-}
+
+
+        private class UpdateProfileTask extends AsyncTask<String, Void, Employee> {
+
+            private UpdateEmployeeWrapper updateEmployeeWrapper;
+            private Employee toUpdateEmployee;
+            private HashMap<Integer, Address> newAddressMap;
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                newAddressMap = new HashMap<Integer, Address>();
+                toUpdateEmployee = new Employee();
+                toUpdateEmployee = employee;
+
+                toUpdateEmployee.setEmployeeNumber(editEmployeeNo.getText().toString());
+                toUpdateEmployee.setPosition(editPosition.getText().toString());
+
+                updateEmployeeWrapper = new UpdateEmployeeWrapper(toUpdateEmployee, grade, employeeType, department, null, existingAddress, newAddressMap);
+            }
+
+            @Override
+            protected void onPostExecute(Employee result) {
+                onTaskCompleted();
+            }
+
+
+            @Override
+            protected Employee doInBackground(String... params) {
+                // The connection URL
+                String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/employee/updateEmployee";
+                RestTemplate restTemplate = new RestTemplate();
+
+                HttpHeaders headers = new HttpHeaders();
+                String plainCreds = username + ":" + password;
+                String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
+                headers.add("Authorization", "Basic " + base64EncodedCredentials);
+
+                // Add the String message converter
+                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+
+                HttpEntity request = new HttpEntity(updateEmployeeWrapper, headers);
+                ResponseEntity<Employee> response = restTemplate.exchange(url, HttpMethod.POST, request, Employee.class);
+                return response.getBody();
+            }
+        }
+    }
 

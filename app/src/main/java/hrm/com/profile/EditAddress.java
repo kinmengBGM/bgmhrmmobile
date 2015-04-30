@@ -4,7 +4,6 @@ package hrm.com.profile;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,39 +15,23 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.Address;
-import hrm.com.model.Employee;
-import hrm.com.model.Users;
+import hrm.com.webservice.AddressWS;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class EditAddress extends Fragment {
 
-    private Employee employee;
-    private Users user;
     private int addressId;
-
-    private String username, password;
+    private Address toUpdateAddress;
 
     private EditText editLine1, editLine2, editLine3, editPostcode, editCity, editState, editCountry;
-
     private Spinner addressType;
 
-    protected Address toUpdateAddress;
-
-    public EditAddress() {
-        // Required empty public constructor
-    }
+    private AddressWS addressWS;
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -57,21 +40,21 @@ public class EditAddress extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_edit_address, container, false);
 
         ((HomeActivity)getActivity()).enableNavigationDrawer(false);
-        //((HomeActivity)getActivity()).getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);
         ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Edit Address Info");
+        ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((HomeActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         setHasOptionsMenu(true);
 
-        employee = ((HomeActivity)getActivity()).getActiveEmployee();
-        username = ((HomeActivity)getActivity()).getUsername();
-        password = ((HomeActivity)getActivity()).getPassword();
-        user = ((HomeActivity)getActivity()).getActiveUser();
+        String username = ((HomeActivity)getActivity()).getUsername();
+        String password = ((HomeActivity)getActivity()).getPassword();
         addressId = ((HomeActivity)getActivity()).getAddressId();
+
+        addressWS = new AddressWS(username, password);
 
         initLayout(rootView);
         GetToUpdateAddressTask getAddress = new GetToUpdateAddressTask();
@@ -92,7 +75,6 @@ public class EditAddress extends Fragment {
         }
         return false;
     }
-
 
     private void initLayout(View rootView){
         editLine1 = (EditText) rootView.findViewById(R.id.editLine1);
@@ -139,47 +121,30 @@ public class EditAddress extends Fragment {
 
         @Override
         protected Address doInBackground(String... params) {
-            return getAddress();
-
+            return addressWS.findById(addressId);
         }
 
-        public Address getAddress() {
-
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/address/findById?id={addressId}";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<Address> response = restTemplate.exchange(url, HttpMethod.GET, request, Address.class, addressId);
-            toUpdateAddress = response.getBody();
-            return toUpdateAddress;
-        }
     }
 
+    public void updateUiValues(){
+        toUpdateAddress.setAddressType(addressType.getSelectedItem().toString());
+        toUpdateAddress.setLine1(editLine1.getText().toString());
+        toUpdateAddress.setLine2(editLine2.getText().toString());
+        toUpdateAddress.setLine3(editLine3.getText().toString());
+        toUpdateAddress.setPostcode(editPostcode.getText().toString());
+        toUpdateAddress.setCity(editCity.getText().toString());
+        toUpdateAddress.setState(editState.getText().toString());
+        toUpdateAddress.setCountry(editCountry.getText().toString());
+        toUpdateAddress.setLastModifiedBy(((HomeActivity)getActivity()).getActiveUser().getUsername());
+        toUpdateAddress.setLastModifiedTime(new java.util.Date());
+    }
 
     private class UpdateAddressTask extends AsyncTask<String, Void, Address>{
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            toUpdateAddress.setAddressType(addressType.getSelectedItem().toString());
-            toUpdateAddress.setLine1(editLine1.getText().toString());
-            toUpdateAddress.setLine2(editLine2.getText().toString());
-            toUpdateAddress.setLine3(editLine3.getText().toString());
-            toUpdateAddress.setPostcode(editPostcode.getText().toString());
-            toUpdateAddress.setCity(editCity.getText().toString());
-            toUpdateAddress.setState(editState.getText().toString());
-            toUpdateAddress.setCountry(editCountry.getText().toString());
-            toUpdateAddress.setLastModifiedBy(((HomeActivity)getActivity()).getActiveUser().getUsername());
-            toUpdateAddress.setLastModifiedTime(new java.util.Date());
+            updateUiValues();
         }
 
         @Override
@@ -189,25 +154,8 @@ public class EditAddress extends Fragment {
 
         @Override
         protected Address doInBackground(String... params) {
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/address/update";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity request = new HttpEntity(toUpdateAddress, headers);
-            ResponseEntity<Address> response = restTemplate.exchange(url, HttpMethod.POST, request, Address.class);
-            toUpdateAddress = response.getBody();
-            return toUpdateAddress;
+            return addressWS.update(toUpdateAddress);
         }
     }
-
-
-
 
 }

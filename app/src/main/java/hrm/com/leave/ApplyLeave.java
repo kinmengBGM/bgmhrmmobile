@@ -268,7 +268,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
     }
 
-
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bitmap imageBitmap;
 
@@ -284,16 +283,20 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
             selectedImagePath = getPath(selectedImageUri);
 
         }
-
         //Take picture from camera
         else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == getActivity().RESULT_OK) {
+            makeAvailableToGallery();
             Toast.makeText(getActivity().getApplicationContext(), "File uploaded from camera", Toast.LENGTH_SHORT).show();
+        }
+        else{
+            if(requestCode == REQUEST_IMAGE_CAPTURE)
+                deleteFileImage();
+            selectedImagePath = null;
         }
 
         if (selectedImagePath != null) {
             imageBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(selectedImagePath), THUMBSIZE, THUMBSIZE);
             retrieveFile(selectedImagePath, imageBitmap);
-
         }
 
     }
@@ -302,7 +305,8 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     public void dispatchGalleryIntent(){
         Intent intent = new Intent();
         intent.setType("image/*");
-        intent.setAction(Intent.ACTION_PICK);
+        //intent.setAction(Intent.ACTION_GET_CONTENT); //File manager
+        intent.setAction(Intent.ACTION_PICK); //Gallery
         startActivityForResult(Intent.createChooser(intent,"Select Picture"), REQUEST_SELECT_PICTURE);
     }
 
@@ -335,7 +339,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
             if (photoFile != null) {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                makeAvailableToGallery();
             }
         }
     }
@@ -362,6 +365,11 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
        selectedImagePath = image.getAbsolutePath();
         return image;
+    }
+
+    public void deleteFileImage(){
+        File file = new File(selectedImagePath);
+        file.delete();
     }
 
     public void retrieveFile(String filepath, Bitmap imageBitmap){
@@ -391,15 +399,9 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         if (yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Sick leave")) {
             txtAttachment.setVisibility(View.VISIBLE);
             sickLeaveRow.setVisibility(View.VISIBLE);
-//            thumbnail.setVisibility(View.VISIBLE);
-//            editAttachment.setVisibility(View.VISIBLE);
-//            btnAttachment.setVisibility(View.VISIBLE);
         } else{
             txtAttachment.setVisibility(View.GONE);
             sickLeaveRow.setVisibility(View.GONE);
-//            editAttachment.setVisibility(View.GONE);
-//            thumbnail.setVisibility(View.GONE);
-//            btnAttachment.setVisibility(View.GONE);
         }
 
         if (!(yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Unpaid leave") || yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Time-In-Lieu leave"))) {

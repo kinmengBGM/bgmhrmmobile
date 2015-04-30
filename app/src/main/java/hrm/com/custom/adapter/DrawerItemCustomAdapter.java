@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter;
 
 import java.util.List;
 
-import hrm.com.hrmprototype.DrawerItem;
+import hrm.com.custom.drawer.DrawerItem;
 import hrm.com.hrmprototype.R;
 
 /**

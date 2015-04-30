@@ -9,14 +9,15 @@
     <ScrollView
         android:id="@+id/scrollView2"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="left|top">
 
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/margin_content_frame">
 
 
             <TextView
@@ -29,8 +30,7 @@
             <EditText
                 android:id="@+id/editWorkPhone"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_column="1" />
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/personalPhone"
@@ -42,8 +42,7 @@
             <EditText
                 android:id="@+id/editPersonalPhone"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_column="1" />
+                android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/workEmail"
@@ -55,8 +54,7 @@
             <EditText
                 android:id="@+id/editWorkEmail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_column="1" />
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/personalEmail"
@@ -68,8 +66,7 @@
             <EditText
                 android:id="@+id/editPersonalEmail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_column="1" />
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

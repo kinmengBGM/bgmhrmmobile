@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,41 +11,31 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import hrm.com.custom.adapter.LeaveAdapter;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.LeaveTransaction;
-import hrm.com.model.Users;
+import hrm.com.webservice.LeaveTransactionWS;
 
 /**
  * Created by Beans on 4/7/2015.
  */
 @SuppressLint("ValidFragment")
 public class LeaveHistory extends Fragment{
-    //private List<LeaveTransaction> leaveHistoryList = new ArrayList<LeaveTransaction>();
-
     private ExpandableListAdapter listAdapter;
     private List<LeaveTransaction> listData;
+
     private ExpandableListView lView;
     private TextView noLeaveHistory;
 
-    private String username;
-    private String password;
-    private Users user;
     private int userId;
 
-    public LeaveHistory() {}
+    private LeaveTransactionWS leaveTransactionWS;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -62,21 +51,20 @@ public class LeaveHistory extends Fragment{
         ((HomeActivity)getActivity()).enableNavigationDrawer(true);
         ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Leave History");
 
-
-        this.username = ((HomeActivity) getActivity()).getUsername();
-        this.password = ((HomeActivity) getActivity()).getPassword();
-        this.user = ((HomeActivity) getActivity()).getActiveUser();
-        this.userId = user.getId();
+        String username = ((HomeActivity) getActivity()).getUsername();
+        String password = ((HomeActivity) getActivity()).getPassword();
+        this.userId = ((HomeActivity) getActivity()).getActiveUser().getId();
 
         lView = (ExpandableListView) rootView.findViewById(R.id.listViewAddress);
-        noLeaveHistory = (TextView) rootView.findViewById(R.id.textView);
+        noLeaveHistory = (TextView) rootView.findViewById(R.id.noLeaveHistory);
+
+        leaveTransactionWS = new LeaveTransactionWS(username, password);
 
         PopulateLeaveHistoryTask populateLeaveHistoryTask = new PopulateLeaveHistoryTask();
         populateLeaveHistoryTask.execute();
 
         return rootView;
     }
-
 
     @Override
     public void onResume(){
@@ -87,6 +75,14 @@ public class LeaveHistory extends Fragment{
     public void setListAdapter(List<LeaveTransaction> result){
         listData = new ArrayList<LeaveTransaction>();
         listAdapter = new LeaveAdapter(getActivity().getApplicationContext(), listData);
+
+        Collections.sort(result, new Comparator<LeaveTransaction>() {
+            public int compare(LeaveTransaction o1, LeaveTransaction o2) {
+                if (o1.getStartDateTime() == null || o2.getStartDateTime() == null)
+                    return 0;
+                return o1.getStartDateTime().compareTo(o2.getStartDateTime());
+            }
+        });
 
         listData.addAll(result);
         lView.setAdapter(listAdapter);
@@ -99,10 +95,14 @@ public class LeaveHistory extends Fragment{
             super.onPostExecute(result);
 
             if(result.size() > 0) {
+                noLeaveHistory.setVisibility(View.GONE);
+                lView.setVisibility(View.VISIBLE);
                 setListAdapter(result);
             }
             else{
-                noLeaveHistory.setText("No leave history to display");
+                noLeaveHistory.setVisibility(View.VISIBLE);
+                lView.setVisibility(View.GONE);
+                noLeaveHistory.setText(R.string.no_leave_history);
             }
         }
 
@@ -119,23 +119,7 @@ public class LeaveHistory extends Fragment{
 
         public List<LeaveTransaction> getLeaveHistory() {
 
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveTransaction/getAllLeavesAppliedByEmployee?employeeId={userId}";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<LeaveTransaction[]> response = restTemplate.exchange(url, HttpMethod.GET, request, LeaveTransaction[].class, userId);
-            LeaveTransaction[] leaveArray = response.getBody();
-            List<LeaveTransaction> result = Arrays.asList(leaveArray);
-            return result;
+            return leaveTransactionWS.getAllLeavesAppliedByEmployee(userId);
         }
     }
 

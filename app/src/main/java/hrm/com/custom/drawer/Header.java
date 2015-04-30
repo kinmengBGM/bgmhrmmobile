@@ -5,7 +5,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import hrm.com.custom.adapter.DrawerItemCustomAdapter;
-import hrm.com.hrmprototype.DrawerItem;
 import hrm.com.hrmprototype.R;
 
 /**

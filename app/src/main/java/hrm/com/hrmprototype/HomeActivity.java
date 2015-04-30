@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
@@ -14,21 +14,16 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
 import hrm.com.custom.adapter.DrawerItemCustomAdapter;
+import hrm.com.custom.drawer.DrawerItem;
 import hrm.com.custom.drawer.Header;
 import hrm.com.custom.drawer.ListItem;
 import hrm.com.custom.enums.Access;
 import hrm.com.custom.listener.ProfileFragmentChangeListener;
-import hrm.com.custom.rest.BasicAuthInterceptor;
 import hrm.com.leave.ApplyLeave;
 import hrm.com.leave.ApproveLeaveTaskList;
 import hrm.com.leave.LeaveHistory;
@@ -41,6 +36,7 @@ import hrm.com.profile.EditBasicDetails;
 import hrm.com.profile.EditContactInfo;
 import hrm.com.profile.EditWorkInfo;
 import hrm.com.profile.ViewProfile;
+import hrm.com.webservice.RoleWS;
 
 public class HomeActivity extends ActionBarActivity {
 
@@ -66,6 +62,7 @@ public class HomeActivity extends ActionBarActivity {
     private Fragment currentFrag = null;
     private Stack<Fragment> fragmentStack;
 
+    private RoleWS roleWS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,15 +76,10 @@ public class HomeActivity extends ActionBarActivity {
         this.activeEmployee = (Employee) intent.getSerializableExtra("employee");
         this.activeUser = (Users) intent.getSerializableExtra("user");
 
+        roleWS = new RoleWS(username, password);
 
-        GetUserRole getRoles = new GetUserRole();
+        GetUserRoleTask getRoles = new GetUserRoleTask();
         getRoles.execute();
-
-        //Don't show title when drawer is opened
-        //mTitle = mDrawerTitle = getTitle();
-        /*title = new String[] { "Home", "My Profile", "Apply Leave", "Leave History", "Upcoming Leaves", "Leave Approval"};
-        icon = new int[] {R.drawable.icon_home, R.drawable.icon_profile, R.drawable.icon_work, R.drawable.icon_admin, R.drawable.icon_admin, R.drawable.icon_admin};
-*/
 
         drawerItems = new ArrayList<DrawerItem>();
 
@@ -108,19 +100,13 @@ public class HomeActivity extends ActionBarActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // ActionBarDrawerToggle ties together the the proper interactions
-        // between the sliding drawer and the action bar app icon
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                R.drawable.icon_drawer, R.string.drawer_open,
-                R.string.drawer_close) {
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
 
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
             }
 
             public void onDrawerOpened(View drawerView) {
-                // Set the title on the action when drawer open
-                getSupportActionBar().setTitle(mDrawerTitle);
                 super.onDrawerOpened(drawerView);
             }
         };
@@ -141,14 +127,16 @@ public class HomeActivity extends ActionBarActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+
+        if (item.getItemId() == android.R.id.home && mDrawerLayout.getDrawerLockMode(mDrawerList) == DrawerLayout.LOCK_MODE_UNLOCKED) {
             if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
                 mDrawerLayout.closeDrawer(mDrawerList);
             } else {
                 mDrawerLayout.openDrawer(mDrawerList);
             }
+        }else if(item.getItemId() == android.R.id.home && mDrawerLayout.getDrawerLockMode(mDrawerList) == DrawerLayout.LOCK_MODE_LOCKED_CLOSED){
+            onBackPressed();
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -162,11 +150,14 @@ public class HomeActivity extends ActionBarActivity {
     }
 
     public void enableNavigationDrawer(boolean isEnabled) {
-        getSupportActionBar().setDisplayHomeAsUpEnabled(isEnabled);
-        getSupportActionBar().setHomeButtonEnabled(isEnabled);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(isEnabled);
+        //getSupportActionBar().setHomeButtonEnabled(isEnabled);
+
         if(isEnabled){
+            mDrawerToggle.setDrawerIndicatorEnabled(isEnabled);
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
         } else {
+            mDrawerToggle.setDrawerIndicatorEnabled(isEnabled);
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         }
     }
@@ -322,7 +313,6 @@ public class HomeActivity extends ActionBarActivity {
 
     @Override
     public void onBackPressed() {
-
         if (fragmentStack.size() == 2) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             fragmentStack.lastElement().onPause();
@@ -335,43 +325,47 @@ public class HomeActivity extends ActionBarActivity {
         }
     }
 
-    private class GetUserRole extends AsyncTask<String, Void, List<String>> {
+    public void updateDrawerItems(){
+
+        for(String x:userRoles){
+            if(Access.HOME.hasAccess(x))
+                hasHomeAccess = true;
+            if(Access.PROFILE.hasAccess(x))
+                hasProfileAccess = true;
+            if(Access.APPLYLEAVE.hasAccess(x))
+                hasApplyLeaveAccess = true;
+            if(Access.LEAVEHISTORY.hasAccess(x))
+                hasLeaveHistoryAccess = true;
+            if(Access.UPCOMINGLEAVE.hasAccess(x))
+                hasUpcomingLeaveAccess = true;
+            if(Access.LEAVEAPPROVAL.hasAccess(x))
+                hasLeaveApprovalAccess = true;
+        }
+        if(hasHomeAccess)
+            drawerItems.add(new ListItem(R.drawable.icon_home, Access.HOME.toString()));
+        if(hasProfileAccess)
+            drawerItems.add(new ListItem(R.drawable.icon_profile, Access.PROFILE.toString()));
+        drawerItems.add(new Header("Leave Management"));
+        if(hasApplyLeaveAccess)
+            drawerItems.add(new ListItem(R.drawable.icon_work, Access.APPLYLEAVE.toString()));
+        if(hasLeaveHistoryAccess)
+            drawerItems.add(new ListItem(R.drawable.icon_work, Access.LEAVEHISTORY.toString()));
+        if(hasUpcomingLeaveAccess)
+            drawerItems.add(new ListItem(R.drawable.icon_work, Access.UPCOMINGLEAVE.toString()));
+        if(hasLeaveApprovalAccess)
+            drawerItems.add(new ListItem(R.drawable.icon_work, Access.LEAVEAPPROVAL.toString()));
+
+        selectItem(0);
+        mMenuAdapter.notifyDataSetChanged();
+
+    }
+
+    private class GetUserRoleTask extends AsyncTask<String, Void, List<String>> {
 
         @Override
         protected void onPostExecute(List<String> result) {
             userRoles = result;
-
-            for(String x:userRoles){
-                if(Access.HOME.hasAccess(x))
-                   hasHomeAccess = true;
-                if(Access.PROFILE.hasAccess(x))
-                    hasProfileAccess = true;
-                if(Access.APPLYLEAVE.hasAccess(x))
-                    hasApplyLeaveAccess = true;
-                if(Access.LEAVEHISTORY.hasAccess(x))
-                    hasLeaveHistoryAccess = true;
-                if(Access.UPCOMINGLEAVE.hasAccess(x))
-                    hasUpcomingLeaveAccess = true;
-                if(Access.LEAVEAPPROVAL.hasAccess(x))
-                    hasLeaveApprovalAccess = true;
-            }
-            if(hasHomeAccess)
-                drawerItems.add(new ListItem(R.drawable.icon_home, Access.HOME.toString()));
-            if(hasProfileAccess)
-                drawerItems.add(new ListItem(R.drawable.icon_profile, Access.PROFILE.toString()));
-            drawerItems.add(new Header("Leave Management"));
-            if(hasApplyLeaveAccess)
-                drawerItems.add(new ListItem(R.drawable.icon_work, Access.APPLYLEAVE.toString()));
-            if(hasLeaveHistoryAccess)
-                drawerItems.add(new ListItem(R.drawable.icon_work, Access.LEAVEHISTORY.toString()));
-            if(hasUpcomingLeaveAccess)
-                drawerItems.add(new ListItem(R.drawable.icon_work, Access.UPCOMINGLEAVE.toString()));
-            if(hasLeaveApprovalAccess)
-                drawerItems.add(new ListItem(R.drawable.icon_work, Access.LEAVEAPPROVAL.toString()));
-
-            selectItem(0);
-            mMenuAdapter.notifyDataSetChanged();
-
+            updateDrawerItems();
         }
 
         @Override
@@ -383,34 +377,13 @@ public class HomeActivity extends ActionBarActivity {
         @Override
         protected List<String> doInBackground(String... params) {
 
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/role/findRoleNamesByUsername?username={username}";
-            RestTemplate restTemplate = new RestTemplate();
-
-
-            final List<ClientHttpRequestInterceptor> interceptors = new ArrayList<ClientHttpRequestInterceptor>();
-            interceptors.add( new BasicAuthInterceptor( username, password ) );
-            restTemplate.setInterceptors(interceptors);
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            String[] roleArray = restTemplate.getForObject(url, String[].class, username);
-
-            List<String> result = Arrays.asList(roleArray);
-            return result;
+            return roleWS.getRolesByUsername();
         }
 
     }
 
-    @Override
-    public void onResume(){
-        super.onResume();
-    }
-
     public int getAddressId(){return addressId;}
     public void setAddressId(int addressId) {this.addressId = addressId;}
-
-    /*public List<Address> getExistingAddressList(){return existingAddressList;}
-    public void setExistingAddressList(List<Address> existingAddressList){this.existingAddressList = existingAddressList;}*/
 
     public Users getActiveUser(){return activeUser;}
     public void setActiveUser(Users activeUser) {this.activeUser = activeUser;}

@@ -1,4 +1,4 @@
-package hrm.com.hrmprototype;
+package hrm.com.custom.drawer;
 
 import android.view.LayoutInflater;
 import android.view.View;

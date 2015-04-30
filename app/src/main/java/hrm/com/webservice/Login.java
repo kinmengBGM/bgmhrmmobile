@@ -1,5 +1,7 @@
 package hrm.com.webservice;
 
+import android.system.ErrnoException;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -16,28 +18,40 @@ import hrm.com.model.Users;
 public class Login {
     RestTemplate restTemplate;
     HttpEntity<String> request;
-    ResponseEntity<Users[]> response;
+
+    Users user;;
+    Employee employee;
+
+    CustomRestTemplate customRT;
     String username;
 
     public Login(String username, String password) {
         this.username = username;
 
-        CustomRestTemplate customRT = new CustomRestTemplate(username, password);
+        customRT = new CustomRestTemplate(username, password);
         restTemplate = customRT.getRestTemplate();
 
         request = new HttpEntity<String>(customRT.getHeaders());
 
     }
 
-    public void doLogin(){
-        Users tempUser = getUser();
-        getEmployee(tempUser.getId());
+    public void doLogin() throws HttpClientErrorException, ErrnoException{
+        user = getUser();
+        employee = getEmployee(user.getId());
     }
 
-    public Users getUser() throws HttpClientErrorException {
+    public Users getActiveUser(){
+        return user;
+    }
+
+    public Employee getActiveEmployee(){
+        return employee;
+    }
+
+    public Users getUser(){
         String YOUR_URL = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/users/findUsersByUsername?username={YOUR_USERNAME}";
 
-        response = restTemplate.exchange(YOUR_URL, HttpMethod.GET, request, Users[].class, username);
+        ResponseEntity<Users[]> response = restTemplate.exchange(YOUR_URL, HttpMethod.GET, request, Users[].class, username);
         Users[] user = response.getBody();
         Users activeUser = user[0];
 

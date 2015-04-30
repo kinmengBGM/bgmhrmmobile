@@ -8,8 +8,7 @@
         android:id="@+id/reason"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="14dp"
-        android:textStyle="bold"
+        android:textSize="16sp"
         android:layout_alignParentTop="true"
         android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
         android:paddingRight="60dp"/>
@@ -18,18 +17,12 @@
         android:id="@+id/status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="10dp"
+        android:textSize="10sp"
         android:textStyle="bold"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:textAllCaps="true"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/dates"
-        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
-        android:layout_below="@+id/reason"/>
 
 </RelativeLayout>

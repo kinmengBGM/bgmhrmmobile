@@ -1,7 +1,6 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="@dimen/margin_content_frame">
+    android:layout_height="match_parent">
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -10,7 +9,8 @@
 
         <RelativeLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:padding="@dimen/margin_content_frame">
 
             <TextView
                 android:id="@+id/txtBasicInfo"
@@ -21,17 +21,17 @@
 
             <RelativeLayout
                 android:id="@+id/layoutBasicInfo"
+                style="@style/ContainerStyle"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/txtBasicInfo"
-                style="@style/ContainerStyle">
+                android:layout_below="@+id/txtBasicInfo">
 
                 <Button
                     android:id="@+id/btnEditBasicInfo"
+                    style="@style/editProfileButtonStyle"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="edit basic info"
-                    style="@style/editProfileButtonStyle"/>
+                    android:text="edit basic info" />
 
                 <TextView
                     android:id="@+id/txtProfileName"
@@ -52,17 +52,17 @@
 
             <RelativeLayout
                 android:id="@+id/layoutContactInfo"
+                style="@style/ContainerStyle"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/txtContactInfo"
-                style="@style/ContainerStyle">
+                android:layout_below="@+id/txtContactInfo">
 
                 <Button
                     android:id="@+id/btnEditContactInfo"
+                    style="@style/editProfileButtonStyle"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="edit contact info"
-                    style="@style/editProfileButtonStyle"/>
+                    android:text="edit contact info" />
 
                 <TextView
                     android:id="@+id/txtProfileWorkPhone"
@@ -89,25 +89,40 @@
 
             <RelativeLayout
                 android:id="@+id/layoutLocationInfo"
+                style="@style/ContainerStyle"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/txtLocationInfo"
-                style="@style/ContainerStyle">
+                android:layout_below="@+id/txtLocationInfo">
 
                 <Button
                     android:id="@+id/btnAddLocationInfo"
+                    style="@style/editProfileButtonStyle"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="add new address"
-                    style="@style/editProfileButtonStyle"/>
+                    android:text="add new address" />
 
 
                 <ListView
                     android:id="@+id/listViewAddress"
-                    android:layout_width="match_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
                     android:layout_below="@+id/btnAddLocationInfo"
-                    android:layout_gravity="left|top" />
+                    android:visibility="gone"/>
+
+                <RelativeLayout
+                    android:id="@+id/layoutAddressInfo"
+                    style="@style/ContainerStyle"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/btnAddLocationInfo">
+
+                    <TextView
+                        android:id="@+id/txtNoAddress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_address"
+                        android:textAppearance="?android:attr/textAppearanceSmall"/>
+                </RelativeLayout>
 
             </RelativeLayout>
 
@@ -121,17 +136,17 @@
 
             <RelativeLayout
                 android:id="@+id/layoutWorkInfo"
+                style="@style/ContainerStyle"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/txtWorkInfo"
-                style="@style/ContainerStyle">
+                android:layout_below="@+id/txtWorkInfo">
 
                 <Button
                     android:id="@+id/btnEditWorkInfo"
+                    style="@style/editProfileButtonStyle"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="edit work info"
-                    style="@style/editProfileButtonStyle"/>
+                    android:text="edit work info" />
 
                 <TextView
                     android:id="@+id/txtProfilePosition"

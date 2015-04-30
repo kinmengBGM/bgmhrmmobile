@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,23 +11,14 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import hrm.com.custom.adapter.LeaveAdapter;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.LeaveTransaction;
-import hrm.com.model.Users;
+import hrm.com.webservice.LeaveTransactionWS;
 
 /**
  * Created by Beans on 4/7/2015.
@@ -38,19 +28,16 @@ public class UpcomingLeave extends Fragment {
 
     private ExpandableListAdapter listAdapter;
     private List<LeaveTransaction> listData;
+
     private ExpandableListView lView;
     private TextView noLeaveHistory;
 
-    private String username;
-    private String password;
-    private Users user;
     private int userId;
 
-    public UpcomingLeave() {}
-
+    private LeaveTransactionWS leaveTransactionWS;
 
     @Override
-    public void onCreate(Bundle savedInstanceState){
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
@@ -61,16 +48,17 @@ public class UpcomingLeave extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
 
 
-        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
-        ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Upcoming Leave");
+        ((HomeActivity) getActivity()).enableNavigationDrawer(true);
+        ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Upcoming Leave");
 
-        this.username = ((HomeActivity) getActivity()).getUsername();
-        this.password = ((HomeActivity) getActivity()).getPassword();
-        this.user = ((HomeActivity) getActivity()).getActiveUser();
-        this.userId = user.getId();
+        String username = ((HomeActivity) getActivity()).getUsername();
+        String password = ((HomeActivity) getActivity()).getPassword();
+        this.userId = ((HomeActivity) getActivity()).getActiveUser().getId();
 
         lView = (ExpandableListView) rootView.findViewById(R.id.listViewAddress);
-        noLeaveHistory = (TextView) rootView.findViewById(R.id.textView);
+        noLeaveHistory = (TextView) rootView.findViewById(R.id.noLeaveHistory);
+
+        leaveTransactionWS = new LeaveTransactionWS(username, password);
 
         PopulateUpcomingLeaveTask populateUpcomingLeaveTask = new PopulateUpcomingLeaveTask();
         populateUpcomingLeaveTask.execute();
@@ -78,7 +66,7 @@ public class UpcomingLeave extends Fragment {
         return rootView;
     }
 
-    public void setListAdapter(List<LeaveTransaction> result){
+    public void setListAdapter(List<LeaveTransaction> result) {
         listData = new ArrayList<LeaveTransaction>();
         listAdapter = new LeaveAdapter(getActivity().getApplicationContext(), listData);
 
@@ -92,11 +80,14 @@ public class UpcomingLeave extends Fragment {
         protected void onPostExecute(List<LeaveTransaction> result) {
             super.onPostExecute(result);
 
-            if(result.size() > 0) {
+            if (result.size() > 0) {
+                noLeaveHistory.setVisibility(View.GONE);
+                lView.setVisibility(View.VISIBLE);
                 setListAdapter(result);
-            }
-            else{
-                noLeaveHistory.setText("No upcoming leaves to display");
+            } else {
+                noLeaveHistory.setVisibility(View.VISIBLE);
+                lView.setVisibility(View.GONE);
+                noLeaveHistory.setText(R.string.no_upcoming_leave);
             }
         }
 
@@ -107,33 +98,9 @@ public class UpcomingLeave extends Fragment {
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return getUpcomingLeaves();
-
+            return leaveTransactionWS.getAllFutureLeavesAppliedByEmployee(userId);
         }
 
-        public List<LeaveTransaction> getUpcomingLeaves() {
-
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveTransaction/getAllFutureLeavesAppliedByEmployee?employeeId={userId}&todayDate={todayDate}";
-            RestTemplate restTemplate = new RestTemplate();
-
-            java.util.Date utilDate = new java.util.Date();
-            Date todayDate = new Date(utilDate.getTime());
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<LeaveTransaction[]> response = restTemplate.exchange(url, HttpMethod.GET, request, LeaveTransaction[].class, userId, todayDate);
-            LeaveTransaction[] leaveArray = response.getBody();
-            List<LeaveTransaction> result = Arrays.asList(leaveArray);
-            return result;
-        }
     }
 
 

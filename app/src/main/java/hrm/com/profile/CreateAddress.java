@@ -65,8 +65,9 @@ public class CreateAddress extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_edit_address, container, false);
 
         ((HomeActivity)getActivity()).enableNavigationDrawer(false);
-        //((HomeActivity)getActivity()).getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);
         ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Create New Address");
+        ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((HomeActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         setHasOptionsMenu(true);
 
         this.username = ((HomeActivity) getActivity()).getUsername();

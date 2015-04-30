@@ -12,8 +12,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text=""
-        android:id="@+id/textView"
+        android:text="@string/no_approve_leave"
+        android:id="@+id/noApproveLeave"
         android:layout_gravity="center_horizontal|top"/>
 
 </RelativeLayout>

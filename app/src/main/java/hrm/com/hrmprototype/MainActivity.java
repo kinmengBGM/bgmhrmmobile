@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.system.ErrnoException;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,7 +13,6 @@ import android.widget.Toast;
 
 import org.springframework.web.client.HttpClientErrorException;
 
-import hrm.com.model.Employee;
 import hrm.com.model.Users;
 import hrm.com.webservice.Login;
 
@@ -50,30 +50,7 @@ public class MainActivity extends ActionBarActivity {
         });
     }
 
-    private class GetUserTask extends AsyncTask<String, Void, Users> {
-
-        @Override
-        protected Users doInBackground(String... s) {
-            try {
-                return newLogin.getUser();
-            }catch(HttpClientErrorException e){
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Users results) {
-            if (results != null) {
-                activeUser = results;
-                GetEmployeeTask getEmployee = new GetEmployeeTask();
-                getEmployee.execute();
-            } else {
-                Toast.makeText(getApplicationContext(), "Login failed", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    private class GetEmployeeTask extends AsyncTask<String, Void, Employee> {
+    private class GetUserTask extends AsyncTask<String, Void, Boolean> {
         private final ProgressDialog dialog = new ProgressDialog(MainActivity.this);
 
         @Override
@@ -84,20 +61,38 @@ public class MainActivity extends ActionBarActivity {
         }
 
         @Override
-        protected Employee doInBackground(String... params) {
-            return newLogin.getEmployee(activeUser.getId());
+        protected Boolean doInBackground(String... s) {
+            try {
+                 newLogin.doLogin();
+                 return true;
+            }catch(HttpClientErrorException e){
+                return false;
+            }catch (ErrnoException e){
+                return false;
+            }
         }
 
         @Override
-        protected void onPostExecute(Employee result) {
-            dialog.dismiss();
-            Intent intent = new Intent("hrm.com.hrmprototype.HomeActivity");
-            intent.putExtra("userId", userId);
-            intent.putExtra("username", YOUR_USERNAME);
-            intent.putExtra("password", YOUR_PASSWORD);
-            intent.putExtra("user", activeUser);
-            intent.putExtra("employee", result);
-            startActivity(intent);
+        protected void onPostExecute(Boolean results) {
+            if (results) {
+                Toast.makeText(getApplicationContext(), "Login successful", Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent("hrm.com.hrmprototype.HomeActivity");
+                intent.putExtra("userId", userId);
+                intent.putExtra("username", YOUR_USERNAME);
+                intent.putExtra("password", YOUR_PASSWORD);
+                intent.putExtra("user", newLogin.getActiveUser());
+                intent.putExtra("employee", newLogin.getActiveEmployee());
+
+                dialog.dismiss();
+                startActivity(intent);
+                /*activeUser = results;
+                GetEmployeeTask getEmployee = new GetEmployeeTask();
+                getEmployee.execute();*/
+            } else {
+                dialog.dismiss();
+                Toast.makeText(getApplicationContext(), "Login failed", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

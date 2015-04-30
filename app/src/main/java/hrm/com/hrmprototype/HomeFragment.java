@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,20 +15,12 @@ import android.widget.TextView;
 
 import com.daimajia.swipe.SwipeLayout;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import java.sql.Date;
-import java.util.Arrays;
 import java.util.List;
 
 import hrm.com.model.Employee;
 import hrm.com.model.LeaveTransaction;
-import hrm.com.model.Users;
+import hrm.com.webservice.LeaveApplicationFlowWS;
+import hrm.com.webservice.LeaveTransactionWS;
 
 
 /**
@@ -40,19 +31,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
 
     private Employee employee;
 
-    private String username;
-    private String password;
-    private Users user;
     private int userId;
-    private String empUsername;
 
     private TextView uReason, uStatus, uDates;
-
     private TextView aEmployee, aLeaveType, aDates, aNoOfDays, aReason;
 
     private RelativeLayout upcomingLeaveLayout, approveLeaveLayout, approveNoDataLayout, upcomingNoDataLayout, upcomingGotDataLayout;
     private SwipeLayout approveGotDataLayout;
 
+    private LeaveTransactionWS leaveTransactionWS;
+    private LeaveApplicationFlowWS leaveApplicationFlowWS;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,14 +50,21 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         ((HomeActivity)getActivity()).enableNavigationDrawer(true);
         ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Home");
 
-
-        this.username = ((HomeActivity) getActivity()).getUsername();
-        this.password = ((HomeActivity) getActivity()).getPassword();
-        this.user = ((HomeActivity) getActivity()).getActiveUser();
-        this.userId = user.getId();
-        this.empUsername = user.getUsername();
-
+        String username = ((HomeActivity) getActivity()).getUsername();
+        String password = ((HomeActivity) getActivity()).getPassword();
+        this.userId = ((HomeActivity) getActivity()).getActiveUser().getId();
         employee=((HomeActivity)getActivity()).getActiveEmployee();
+
+        leaveTransactionWS = new LeaveTransactionWS(username, password);
+        leaveApplicationFlowWS = new LeaveApplicationFlowWS(username, password);
+
+
+        initUiValues(rootView);
+
+        return rootView;
+    }
+
+    public void initUiValues(View rootView){
 
         TextView employeeName = (TextView) rootView.findViewById(R.id.employeeName);
         TextView employeePosition = (TextView) rootView.findViewById(R.id.employeePosition);
@@ -105,11 +100,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         upcomingNoDataLayout = (RelativeLayout) rootView.findViewById(R.id.layoutHomeUpcomingLeaveNoData);
         upcomingGotDataLayout = (RelativeLayout) rootView.findViewById(R.id.layoutHomeUpcomingLeaveGotData);
 
-        updateUiValues();
-        return rootView;
-    }
-
-    public void updateUiValues(){
         if(((HomeActivity)getActivity()).getHasUpcomingLeaveAccess()){
 
             upcomingLeaveLayout.setVisibility(View.VISIBLE);
@@ -129,8 +119,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         }
         else
             approveLeaveLayout.setVisibility(View.GONE);
-
-
     }
 
     @Override
@@ -154,65 +142,59 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         }
     }
 
+    public void updateUpcomingLeaveUI(List<LeaveTransaction> result){
+
+        if(result.size() > 0) {
+            upcomingNoDataLayout.setVisibility(View.GONE);
+            upcomingGotDataLayout.setVisibility(View.VISIBLE);
+
+            LeaveTransaction first = result.get(0);
+            if (first.getStatus().equals("Approved")) uStatus.setTextColor(Color.parseColor("#00a208"));
+            else if (first.getStatus().equals("Rejected")) uStatus.setTextColor(Color.parseColor("#b90000"));
+            else if (first.getStatus().equals("Pending")) uStatus.setTextColor(Color.parseColor("#cf5810"));
+            else if (first.getStatus().equals("Cancelled")) uStatus.setTextColor(Color.parseColor("#1066cf"));
+
+            uReason.setText(first.getReason());
+            uStatus.setText(first.getStatus());
+            uDates.setText(first.fetchStartTimeStr() + " to " + first.fetchEndTimeStr());
+        }
+        else{
+            upcomingNoDataLayout.setVisibility(View.VISIBLE);
+            upcomingGotDataLayout.setVisibility(View.GONE);
+        }
+    }
+
     private class PopulateUpcomingLeaveTask extends AsyncTask<String, Void, List<LeaveTransaction>> {
 
         @Override
         protected void onPostExecute(List<LeaveTransaction> result) {
             super.onPostExecute(result);
-
-            if(result.size() > 0) {
-                upcomingNoDataLayout.setVisibility(View.GONE);
-                upcomingGotDataLayout.setVisibility(View.VISIBLE);
-
-                LeaveTransaction first = result.get(0);
-                if (first.getStatus().equals("Approved")) uStatus.setTextColor(Color.parseColor("#00a208"));
-                else if (first.getStatus().equals("Rejected")) uStatus.setTextColor(Color.parseColor("#b90000"));
-                else if (first.getStatus().equals("Pending")) uStatus.setTextColor(Color.parseColor("#cf5810"));
-                else if (first.getStatus().equals("Cancelled")) uStatus.setTextColor(Color.parseColor("#1066cf"));
-
-                uReason.setText(first.getReason());
-                uStatus.setText(first.getStatus());
-                uDates.setText(first.fetchStartTimeStr() + " to " + first.fetchEndTimeStr());
-            }
-            else{
-                upcomingNoDataLayout.setVisibility(View.VISIBLE);
-                upcomingGotDataLayout.setVisibility(View.GONE);
-            }
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+            updateUpcomingLeaveUI(result);
         }
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return getUpcomingLeaves();
-
+            return leaveTransactionWS.getAllFutureLeavesAppliedByEmployee(userId);
         }
+    }
 
-        public List<LeaveTransaction> getUpcomingLeaves() {
+    public void updateApproveLeaveUI(List<LeaveTransaction> result){
 
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveTransaction/getAllFutureLeavesAppliedByEmployee?employeeId={userId}&todayDate={todayDate}";
-            RestTemplate restTemplate = new RestTemplate();
+        if (result.size() > 0) {
+            approveNoDataLayout.setVisibility(View.GONE);
+            approveGotDataLayout.setVisibility(View.VISIBLE);
 
-            java.util.Date utilDate = new java.util.Date();
-            Date todayDate = new Date(utilDate.getTime());
+            LeaveTransaction first = result.get(0);
 
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
+            aEmployee.setText(first.getEmployee().getName());
+            aLeaveType.setText(first.getLeaveType().getDescription());
+            aNoOfDays.setText("Number of Days: " + first.getNumberOfDays().toString());
+            aReason.setText("Reason: " + first.getReason());
+            aDates.setText(first.fetchStartTimeStr() + " to " + first.fetchEndTimeStr());
 
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<LeaveTransaction[]> response = restTemplate.exchange(url, HttpMethod.GET, request, LeaveTransaction[].class, userId, todayDate);
-            LeaveTransaction[] leaveArray = response.getBody();
-            List<LeaveTransaction> result = Arrays.asList(leaveArray);
-            return result;
+        } else {
+            approveNoDataLayout.setVisibility(View.VISIBLE);
+            approveGotDataLayout.setVisibility(View.GONE);
         }
     }
 
@@ -221,23 +203,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         @Override
         protected void onPostExecute(List<LeaveTransaction> result) {
             super.onPostExecute(result);
-
-            if (result.size() > 0) {
-                approveNoDataLayout.setVisibility(View.GONE);
-                approveGotDataLayout.setVisibility(View.VISIBLE);
-
-                LeaveTransaction first = result.get(0);
-
-                aEmployee.setText(first.getEmployee().getName());
-                aLeaveType.setText(first.getLeaveType().getDescription());
-                aNoOfDays.setText("Number of Days: " + first.getNumberOfDays().toString());
-                aReason.setText("Reason: " + first.getReason());
-                aDates.setText(first.fetchStartTimeStr() + " to " + first.fetchEndTimeStr());
-
-            } else {
-                approveNoDataLayout.setVisibility(View.VISIBLE);
-                approveGotDataLayout.setVisibility(View.GONE);
-            }
+            updateApproveLeaveUI(result);
         }
 
         @Override
@@ -248,28 +214,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
             return getApproveLeavesTaskList();
-
         }
 
         public List<LeaveTransaction> getApproveLeavesTaskList() {
-
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationFlow/getPendingLeaveRequestsByRoleOfUser?username={empUsername}";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<LeaveTransaction[]> response = restTemplate.exchange(url, HttpMethod.GET, request, LeaveTransaction[].class, empUsername);
-            LeaveTransaction[] leaveArray = response.getBody();
-            List<LeaveTransaction> result = Arrays.asList(leaveArray);
-            return result;
+            return leaveApplicationFlowWS.getPendingLeaveRequestsByRoleOfUser();
         }
     }
 }

@@ -3,9 +3,19 @@
 
     <style name="CustomTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:actionBarStyle">@style/MyActionBar</item>
-        <item name="android:editTextStyle">@style/MyEditText</item>
-        <item name="android:spinnerStyle">@style/MySpinner</item>
+
+        <!--Navigation drawer-->
         <item name="android:activatedBackgroundIndicator">@drawable/drawer_list_selector</item>
+
+        <item name="android:editTextStyle">@style/MyEditText</item>
+
+        <item name="android:spinnerStyle">@style/MySpinner</item>
+        <item name="android:spinnerDropDownItemStyle">@style/MySpinnerDropDownItemStyle</item> <!--Spinner drop down item-->
+        <item name="android:spinnerItemStyle">@style/MySpinnerItemStyle</item> <!--Spinner main item-->
+
+        <!--        <item name="android:listViewStyle">@style/MySpinnerDropDownItemStyle</item>
+                <item name="android:listViewWhiteStyle">@style/MySpinnerDropDownItemStyle</item>-->
+
         <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
         <item name="android:dialogTheme">@style/MyDialogStyle</item>
         <item name="android:buttonStyle">@style/ButtonStyle</item>
@@ -76,7 +86,23 @@
     <style name="MySpinner" parent="Widget.AppCompat.Spinner">
         <item name="android:background">@drawable/edittext</item>
         <item name="android:spinnerMode">dropdown</item>
+        <!--
         <item name="android:popupBackground">@drawable/spinner</item>
+        <item name="android:paddingLeft">@dimen/padding_textbox</item>
+        <item name="android:paddingRight">@dimen/padding_textbox</item>-->
+    </style>
+
+    <style name="MySpinnerItemStyle">
+        <item name="android:textAppearance">@style/MyEditText</item>
+        <item name="android:paddingLeft">@dimen/padding_textbox</item>
+        <item name="android:paddingRight">@dimen/padding_textbox</item>
+    </style>
+
+    <style name="MySpinnerDropDownItemStyle">
+        <item name="android:background">@drawable/spinner</item>
+        <item name="android:textAppearance">@style/MyEditText</item>
+        <item name="android:paddingLeft">@dimen/padding_textbox</item>
+        <item name="android:paddingRight">@dimen/padding_textbox</item>
     </style>
 
     <style name="MyPagerTabStrip">

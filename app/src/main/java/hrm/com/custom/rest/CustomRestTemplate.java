@@ -10,7 +10,7 @@ import org.springframework.web.client.RestTemplate;
 /**
  * Created by Beans on 4/29/2015.
  */
-public class CustomRestTemplate {
+public class CustomRestTemplate{
 
     RestTemplate restTemplate;
     HttpHeaders headers;

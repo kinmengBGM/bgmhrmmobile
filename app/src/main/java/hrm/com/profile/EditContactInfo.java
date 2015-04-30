@@ -4,7 +4,6 @@ package hrm.com.profile;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,36 +13,25 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.Date;
 
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.Employee;
 import hrm.com.model.Users;
+import hrm.com.webservice.EmployeeWS;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class EditContactInfo extends Fragment {
 
-
     private Employee employee;
     private Users user;
 
-    private String username, password;
-
     private EditText editPersonalPhone, editWorkPhone, editPersonalEmail, editWorkEmail;
 
-    public EditContactInfo() {
-        // Required empty public constructor
-    }
+    private EmployeeWS employeeWS;
 
 
     @Override
@@ -54,24 +42,24 @@ public class EditContactInfo extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {/*
-        // Inflate the layout for this fragment
-        ((HomeActivity)getActivity()).enableNavigationDrawer(false);
-        ActionBar actionBar = ((HomeActivity)getActivity()).getSupportActionBar();
-        actionBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);*/
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_edit_contact_info, container, false);
 
         ((HomeActivity)getActivity()).enableNavigationDrawer(false);
-        //((HomeActivity)getActivity()).getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);
         ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Edit Basic Info");
+        ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((HomeActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         setHasOptionsMenu(true);
 
+
         employee = ((HomeActivity)getActivity()).getActiveEmployee();
-        username = ((HomeActivity)getActivity()).getUsername();
-        password = ((HomeActivity)getActivity()).getPassword();
+        String username = ((HomeActivity)getActivity()).getUsername();
+        String password = ((HomeActivity)getActivity()).getPassword();
         user = ((HomeActivity)getActivity()).getActiveUser();
+
+        employeeWS = new EmployeeWS(username, password);
+
         initLayout(rootView);
         initValues();
 
@@ -111,6 +99,7 @@ public class EditContactInfo extends Fragment {
 
         @Override
         protected void onPostExecute(Employee result){
+            super.onPostExecute(result);
             employee = result;
         }
 
@@ -132,21 +121,7 @@ public class EditContactInfo extends Fragment {
 
         @Override
         protected Employee doInBackground(String... params) {
-
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/employee/update";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity request = new HttpEntity(toUpdateEmployee, headers);
-            ResponseEntity<Employee> response = restTemplate.exchange(url, HttpMethod.POST, request, Employee.class);
-            return response.getBody();
+            return employeeWS.update(toUpdateEmployee);
         }
     }
 

@@ -21,7 +21,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +44,7 @@ import hrm.com.model.LeaveType;
 import hrm.com.model.Role;
 import hrm.com.model.Users;
 import hrm.com.model.YearlyEntitlement;
+import hrm.com.webservice.LeaveApplicationFlowWS;
 
 /**
  * Created by Beans on 4/14/2015.
@@ -55,7 +55,7 @@ public class ApproveLeaveTaskList extends Fragment {
     private ApproveLeaveAdapter adpt;
     private List<LeaveTransaction> approveLeaveList = new ArrayList<LeaveTransaction>();
 
-    private TextView noLeaveHistory;
+    private TextView noApproveLeave;
 
     private String username;
     private String password;
@@ -64,6 +64,8 @@ public class ApproveLeaveTaskList extends Fragment {
     private String empUsername;
 
     private ListView lView;
+
+    private LeaveApplicationFlowWS leaveApplicationFlowWS;
 
     int leaveTransactionId;
     private boolean insertDeleted = false;
@@ -89,8 +91,8 @@ public class ApproveLeaveTaskList extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_approve_leave_list, container, false);
 
-        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
-        ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Leave Approval");
+        ((HomeActivity) getActivity()).enableNavigationDrawer(true);
+        ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Leave Approval");
 
         this.username = ((HomeActivity) getActivity()).getUsername();
         this.password = ((HomeActivity) getActivity()).getPassword();
@@ -98,7 +100,9 @@ public class ApproveLeaveTaskList extends Fragment {
         empUsername = user.getUsername();
 
         lView = (ListView) rootView.findViewById(R.id.listViewAddress);
-        noLeaveHistory = (TextView) rootView.findViewById(R.id.textView);
+        noApproveLeave = (TextView) rootView.findViewById(R.id.noApproveLeave);
+
+        leaveApplicationFlowWS = new LeaveApplicationFlowWS(username, password);
 
         PopulateApproveLeaveTaskList populate = new PopulateApproveLeaveTaskList();
         populate.execute();
@@ -301,12 +305,12 @@ public class ApproveLeaveTaskList extends Fragment {
             @Override
             public void onApproveSelected(int leaveId) {
                 leaveTransactionId = leaveId;
-                Toast.makeText(getActivity().getApplicationContext(), "APPROVE " +leaveTransactionId, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplicationContext(), "APPROVE " + leaveTransactionId, Toast.LENGTH_SHORT).show();
                 doApproveLeaveRequest();
             }
         }, new ViewSickLeaveAttachmentListener() {
             @Override
-            public void onViewAttachment(LeaveTransaction attachment){
+            public void onViewAttachment(LeaveTransaction attachment) {
                 //TODO: Open pdf viewer
                 SickLeaveDialog sickLeaveDialog = new SickLeaveDialog(attachment.getSickLeaveAttachment());
                 sickLeaveDialog.show(getActivity().getSupportFragmentManager(), "AttachmentDialog");
@@ -322,15 +326,14 @@ public class ApproveLeaveTaskList extends Fragment {
             super.onPostExecute(result);
 
             if (result.size() > 0) {
+                lView.setVisibility(View.VISIBLE);
+                noApproveLeave.setVisibility(View.GONE);
+
                 setApproveLeaveList(result);
-
-                //Debugging
-              /*  for(LeaveTransaction x: result)
-                    Toast.makeText(getActivity().getApplicationContext(), String.valueOf(x.getId()), Toast.LENGTH_SHORT).show();*/
-
                 setApproveLeaveList();
-                } else {
-                noLeaveHistory.setText("No leaves to be approved");
+            } else {
+                noApproveLeave.setVisibility(View.VISIBLE);
+                lView.setVisibility(View.GONE);
             }
         }
 
@@ -341,29 +344,8 @@ public class ApproveLeaveTaskList extends Fragment {
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return getApproveLeavesTaskList();
+            return leaveApplicationFlowWS.getPendingLeaveRequestsByRoleOfUser();
 
-        }
-
-        public List<LeaveTransaction> getApproveLeavesTaskList() {
-
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationFlow/getPendingLeaveRequestsByRoleOfUser?username={empUsername}";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<LeaveTransaction[]> response = restTemplate.exchange(url, HttpMethod.GET, request, LeaveTransaction[].class, empUsername);
-            LeaveTransaction[] leaveArray = response.getBody();
-            List<LeaveTransaction> result = Arrays.asList(leaveArray);
-            return result;
         }
     }
 
@@ -423,12 +405,12 @@ public class ApproveLeaveTaskList extends Fragment {
             selectedLeaveRequest.setDecisionsBean(leaveFlowDecisions);
             selectedLeaveRequest.setLastModifiedBy(getUser().getUsername());
 
-            if(leaveProcessCompleted){
+            if (leaveProcessCompleted) {
                 // Getting the latest yearly balance and do the operations on it.
                 if (Leave.TIMEINLIEU.equalsName(selectedLeaveRequest.getLeaveType().getName())) {
                     FindByEmployeeNameAndTypeIdTask findLeaveType = new FindByEmployeeNameAndTypeIdTask(Leave.ANNUAL.toString(), selectedLeaveRequest.getEmployee().getEmployeeType().getId());
                     findLeaveType.execute();
-                } else{
+                } else {
                     FindByEmployeeAndLeaveTypeTask findEntitlement = new FindByEmployeeAndLeaveTypeTask(selectedLeaveRequest.getEmployee().getId(), selectedLeaveRequest.getLeaveType().getId());
                     findEntitlement.execute();
                 }
@@ -470,7 +452,7 @@ public class ApproveLeaveTaskList extends Fragment {
         String name;
         int employeeTypeId;
 
-        public FindByEmployeeNameAndTypeIdTask(String name, int employeeTypeId){
+        public FindByEmployeeNameAndTypeIdTask(String name, int employeeTypeId) {
             this.name = name;
             this.employeeTypeId = employeeTypeId;
         }
@@ -491,7 +473,7 @@ public class ApproveLeaveTaskList extends Fragment {
         @Override
         protected LeaveType doInBackground(String... params) {
             // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/findByEmployeeNameAndTypeId?name={name}&employeeTypeId={employeeTypeId}";
+            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveType/findByEmployeeNameAndTypeId?name={name}&employeeTypeId={employeeTypeId}";
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
@@ -554,10 +536,11 @@ public class ApproveLeaveTaskList extends Fragment {
     private class FindByEmployeeAndLeaveTypeTask extends AsyncTask<String, Void, YearlyEntitlement> {
         protected int employeeId, leaveTypeId;
 
-        public FindByEmployeeAndLeaveTypeTask(int employeeId, int leaveTypeId){
+        public FindByEmployeeAndLeaveTypeTask(int employeeId, int leaveTypeId) {
             this.employeeId = employeeId;
             this.leaveTypeId = leaveTypeId;
         }
+
         @Override
         protected void onPostExecute(YearlyEntitlement result) {
             super.onPostExecute(result);
@@ -597,13 +580,13 @@ public class ApproveLeaveTaskList extends Fragment {
 
     }
 
-    private class UpdateLeaveBalancesOnceApprovedTask  extends AsyncTask<String, Void, Boolean>{
+    private class UpdateLeaveBalancesOnceApprovedTask extends AsyncTask<String, Void, Boolean> {
 
         @Override
         protected void onPostExecute(Boolean result) {
-            if(result)
+            if (result)
                 Toast.makeText(getActivity().getApplicationContext(), "Leave Approved", Toast.LENGTH_SHORT).show();
-            else{
+            else {
                 Toast.makeText(getActivity().getApplicationContext(), "Leave Rejected", Toast.LENGTH_SHORT).show();
                 rej.dismiss();
             }
@@ -620,7 +603,7 @@ public class ApproveLeaveTaskList extends Fragment {
         protected Boolean doInBackground(String... params) {
             // The connection URL
             String url;
-            if(isApproved)
+            if (isApproved)
                 url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationFlow/updateLeaveBalancesOnceApproved";
             else
                 url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationFlow/updateLeaveBalancesOnceRejected";

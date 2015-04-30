@@ -16,7 +16,8 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="@dimen/margin_content_frame">
 
             <TextView
                 android:id="@+id/name"
@@ -28,8 +29,7 @@
             <EditText
                 android:id="@+id/editName"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_column="1" />
+                android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/icNo"
@@ -41,8 +41,7 @@
             <EditText
                 android:id="@+id/editIcNo"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_column="1" />
+                android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/passportNo"
@@ -54,8 +53,7 @@
             <EditText
                 android:id="@+id/editPassportNo"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_column="1" />
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/gender"
@@ -68,8 +66,7 @@
                 android:id="@+id/editGender"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:entries="@array/genderItems" />
+                android:entries="@array/genderItems"/>
 
 
             <TextView
@@ -83,8 +80,7 @@
                 android:id="@+id/editReligion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:entries="@array/religionItems" />
+                android:entries="@array/religionItems"/>
 
             <TextView
                 android:id="@+id/marital"
@@ -97,8 +93,7 @@
                 android:id="@+id/editMarital"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_column="1"
-                android:entries="@array/maritalItems" />
+                android:entries="@array/maritalItems"/>
 
             <TextView
                 android:id="@+id/nationality"
@@ -110,8 +105,7 @@
             <EditText
                 android:id="@+id/editNationality"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_column="1" />
+                android:layout_height="wrap_content"/>
         </LinearLayout>
     </ScrollView>
 </FrameLayout>
