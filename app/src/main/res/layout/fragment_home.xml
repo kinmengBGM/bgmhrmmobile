@@ -110,7 +110,8 @@
                         android:id="@+id/txtNoUpcomingLeave"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/no_upcoming_leave" />
+                        android:text="@string/no_upcoming_leave"
+                        android:layout_centerInParent="true"/>
 
                 </RelativeLayout>
 
@@ -191,7 +192,8 @@
                         android:id="@+id/txtNoApproveLeave"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/no_approve_leave" />
+                        android:text="@string/no_approve_leave"
+                        android:layout_centerInParent="true"/>
 
                 </RelativeLayout>
 

@@ -97,7 +97,8 @@
                     android:id="@+id/editStartDate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:focusable="false" />
+                    android:focusable="false"
+                    android:paddingLeft="@dimen/padding_textbox_icon"/>
 
                 <ImageView
                     android:id="@+id/calendar1"
@@ -128,7 +129,8 @@
                     android:id="@+id/editEndDate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:focusable="false" />
+                    android:focusable="false"
+                    android:paddingLeft="@dimen/padding_textbox_icon"/>
 
                 <ImageView
                     android:id="@+id/calendar2"
@@ -217,7 +219,8 @@
                 android:id="@+id/btnApplyLeave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Apply Leave"/>
+                android:text="Apply Leave"
+                android:layout_gravity="center"/>
 
         </LinearLayout>
     </ScrollView>

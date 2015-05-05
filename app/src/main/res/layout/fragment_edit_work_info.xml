@@ -92,12 +92,30 @@
                 android:text="Join Date: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <EditText
-                android:id="@+id/editJoinDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:focusable="false"/>
 
+            <RelativeLayout
+                android:id="@+id/rowJoinDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/editJoinDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:paddingLeft="@dimen/padding_textbox_icon"/>
+
+                <ImageView
+                    android:id="@+id/calendar1"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="5dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/icon_calendar" />
+
+            </RelativeLayout>
             <TextView
                 android:id="@+id/resDate"
                 android:layout_width="wrap_content"
@@ -105,11 +123,30 @@
                 android:text="Resignation Date: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <EditText
-                android:id="@+id/editResDate"
-                android:layout_width="match_parent"
+            <RelativeLayout
+                android:id="@+id/rowResDate"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:focusable="false"/>
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/editResDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:paddingLeft="@dimen/padding_textbox_icon"/>
+
+                <ImageView
+                    android:id="@+id/calendar2"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:padding="5dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/icon_calendar" />
+
+            </RelativeLayout>
+
 
 
         </LinearLayout>

@@ -75,8 +75,6 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(Boolean results) {
             if (results) {
-                Toast.makeText(getApplicationContext(), "Login successful", Toast.LENGTH_SHORT).show();
-
                 Intent intent = new Intent("hrm.com.hrmprototype.HomeActivity");
                 intent.putExtra("userId", userId);
                 intent.putExtra("username", YOUR_USERNAME);
@@ -91,7 +89,7 @@ public class MainActivity extends ActionBarActivity {
                 getEmployee.execute();*/
             } else {
                 dialog.dismiss();
-                Toast.makeText(getApplicationContext(), "Login failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.error_login_validation, Toast.LENGTH_SHORT).show();
             }
         }
     }

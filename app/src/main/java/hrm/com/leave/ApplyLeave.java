@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,12 +25,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -41,7 +35,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -52,7 +45,6 @@ import hrm.com.custom.fragment.DatePickerFragment;
 import hrm.com.custom.fragment.SickLeaveAttachmentDialog;
 import hrm.com.custom.listener.DatePickerListener;
 import hrm.com.custom.listener.SickLeaveAttachmentListener;
-import hrm.com.custom.listener.TaskListener;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.Employee;
@@ -62,10 +54,13 @@ import hrm.com.model.LeaveTransaction;
 import hrm.com.model.Role;
 import hrm.com.model.Users;
 import hrm.com.model.YearlyEntitlement;
+import hrm.com.webservice.LeaveApplicationEmailNotificationWS;
+import hrm.com.webservice.LeaveTransactionWS;
+import hrm.com.webservice.YearlyEntitlementWS;
 import hrm.com.wrapper.GetLeaveRuleByRoleAndLeaveTypeWrapper;
 
 @SuppressWarnings("ValidFragment")
-public class ApplyLeave extends Fragment implements TaskListener, AdapterView.OnItemSelectedListener, View.OnClickListener {
+public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
 
     //FILE MANAGER
     final int THUMBSIZE = 128;
@@ -85,7 +80,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     private Double yearlyBalance;
     //private AuditTrail auditTrail;
     private Double allowedMaximumLeaves;
-    //private UploadedFile sickLeaveAttachment;
 
     private String leaveAttachmentName;
     private byte[] byteData = null;
@@ -101,33 +95,21 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     private List<YearlyEntitlement> yearlyEntitlementList;
 
     private Spinner editLeaveType;
-    private EditText editEntitlement;
-    private EditText editCurrentLeaveBal;
-    private EditText editYearlyLeaveBal;
-    private EditText editStartDate;
-    private EditText editEndDate;
-    private EditText editNoOfDays;
-    private EditText editReason;
-    private EditText editAttachment;
-
+    private EditText editEntitlement, editCurrentLeaveBal, editYearlyLeaveBal, editStartDate, editEndDate, editNoOfDays, editReason, editAttachment;
     private TextView txtEntitlement, txtCurrentLeaveBal, txtYearlyLeaveBal, txtAttachment;
-
     private ImageView thumbnail;
-    /*
-    private TableRow rowCurrentLeaveBal;
-    private TableRow rowYearlyLeaveBal;
-    private TableRow rowEntitlement;
-*/
     private Button btnApplyLeave;
     private ImageButton btnAttachment;
 
     private LinearLayout sickLeaveRow;
 
-    private String username;
-    private String password;
     private Employee employee;
     private Users user;
     private int employeeId;
+
+    private YearlyEntitlementWS yearlyEntitlementWS;
+    private LeaveTransactionWS leaveTransactionWS;
+    private LeaveApplicationEmailNotificationWS leaveApplicationEmailWS;
 
     public static ApplyLeave newInstance() {
         return new ApplyLeave();
@@ -140,20 +122,23 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_apply_leave, container, false);
         initLayout(rootView);
 
-        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
-        ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Apply Leave");
+        ((HomeActivity) getActivity()).enableNavigationDrawer(true);
+        ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Apply Leave");
 
-        this.username = ((HomeActivity) getActivity()).getUsername();
-        this.password = ((HomeActivity) getActivity()).getPassword();
+        String username = ((HomeActivity) getActivity()).getUsername();
+        String password = ((HomeActivity) getActivity()).getPassword();
         this.employee = ((HomeActivity) getActivity()).getActiveEmployee();
         this.user = (((HomeActivity) getActivity()).getActiveUser());
         this.employeeId = employee.getId();
+
+        yearlyEntitlementWS = new YearlyEntitlementWS(username, password);
+        leaveTransactionWS = new LeaveTransactionWS(username, password);
+        leaveApplicationEmailWS = new LeaveApplicationEmailNotificationWS(username, password);
 
         PopulateYearlyEntitlementTask pop = new PopulateYearlyEntitlementTask();
         pop.execute();
@@ -192,11 +177,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         editEndDate.setOnClickListener(this);
         btnAttachment.setOnClickListener(this);
         btnApplyLeave.setOnClickListener(this);
-    }
-
-    @Override
-    public void onTaskCompleted() {
-
     }
 
     @Override
@@ -252,17 +232,18 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
                 sickDialog.show(getActivity().getSupportFragmentManager(), "SickLeaveDialog");
                 break;
             case R.id.btnApplyLeave:
-                Toast.makeText(getActivity().getApplicationContext(), "Leave Applied", Toast.LENGTH_SHORT).show();
 
                 try {
                     setValues();
-                    applyLeave();
+                    if (applyLeave()) {
+                        Toast.makeText(getActivity().getApplicationContext(), R.string.info_applyleave, Toast.LENGTH_SHORT).show();
+                        ((HomeActivity) getActivity()).switchFragment("home");
+                    }
                 } catch (ParseException e) {
                     e.printStackTrace();
                     Toast.makeText(getActivity().getApplicationContext(), "Error processing leave application", Toast.LENGTH_SHORT).show();
                 }
 
-                ((HomeActivity)getActivity()).switchFragment("home");
                 break;
         }
 
@@ -272,8 +253,8 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         Bitmap imageBitmap;
 
         //Select picture from gallery
-        if (requestCode == REQUEST_SELECT_PICTURE && resultCode == getActivity().RESULT_OK){
-            Toast.makeText(getActivity().getApplicationContext(), "File uploaded from gallery", Toast.LENGTH_SHORT).show();
+        if (requestCode == REQUEST_SELECT_PICTURE && resultCode == getActivity().RESULT_OK) {
+            Toast.makeText(getActivity().getApplicationContext(), R.string.info_sickleaveattachment_galleryupload, Toast.LENGTH_SHORT).show();
             Uri selectedImageUri = data.getData();
             /* OI FILE MANAGER DISABLED
             //OI FILE Manager
@@ -286,10 +267,9 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         //Take picture from camera
         else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == getActivity().RESULT_OK) {
             makeAvailableToGallery();
-            Toast.makeText(getActivity().getApplicationContext(), "File uploaded from camera", Toast.LENGTH_SHORT).show();
-        }
-        else{
-            if(requestCode == REQUEST_IMAGE_CAPTURE)
+            Toast.makeText(getActivity().getApplicationContext(), R.string.info_sickleaveattachment_cameraupload, Toast.LENGTH_SHORT).show();
+        } else {
+            if (requestCode == REQUEST_IMAGE_CAPTURE)
                 deleteFileImage();
             selectedImagePath = null;
         }
@@ -302,12 +282,12 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     }
 
     //Gallery functions
-    public void dispatchGalleryIntent(){
+    public void dispatchGalleryIntent() {
         Intent intent = new Intent();
         intent.setType("image/*");
         //intent.setAction(Intent.ACTION_GET_CONTENT); //File manager
         intent.setAction(Intent.ACTION_PICK); //Gallery
-        startActivityForResult(Intent.createChooser(intent,"Select Picture"), REQUEST_SELECT_PICTURE);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQUEST_SELECT_PICTURE);
     }
 
     public String getPath(Uri uri) {
@@ -333,7 +313,7 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
                 photoFile = createImageFile();
             } catch (IOException ex) {
                 // Error occurred while creating the File
-                Toast.makeText(getActivity().getApplicationContext(), "Error Creating File", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_sickleaveattachment_filecreation, Toast.LENGTH_SHORT).show();
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
@@ -343,7 +323,7 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         }
     }
 
-    private void makeAvailableToGallery(){
+    private void makeAvailableToGallery() {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         File f = new File(selectedImagePath);
         Uri contentUri = Uri.fromFile(f);
@@ -363,16 +343,16 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
                 storageDir      /* directory */
         );
 
-       selectedImagePath = image.getAbsolutePath();
+        selectedImagePath = image.getAbsolutePath();
         return image;
     }
 
-    public void deleteFileImage(){
+    public void deleteFileImage() {
         File file = new File(selectedImagePath);
         file.delete();
     }
 
-    public void retrieveFile(String filepath, Bitmap imageBitmap){
+    public void retrieveFile(String filepath, Bitmap imageBitmap) {
         File imagefile = new File(filepath);
         leaveAttachmentName = imagefile.getName();
         editAttachment.setText(leaveAttachmentName);
@@ -386,11 +366,8 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
         Bitmap bm = BitmapFactory.decodeStream(fis);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, 100 , baos);
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byteData = baos.toByteArray();
-
-        //String encImage = Base64.encodeToString(b, Base64.DEFAULT);
-
     }
 
     public void updateUiValues(int position) {
@@ -399,7 +376,7 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         if (yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Sick leave")) {
             txtAttachment.setVisibility(View.VISIBLE);
             sickLeaveRow.setVisibility(View.VISIBLE);
-        } else{
+        } else {
             txtAttachment.setVisibility(View.GONE);
             sickLeaveRow.setVisibility(View.GONE);
         }
@@ -413,7 +390,7 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
             txtYearlyLeaveBal.setVisibility(View.VISIBLE);
             editYearlyLeaveBal.setText(String.valueOf(yearlyEntitlementList.get(position).getYearlyLeaveBalance()));
 
-        } else{
+        } else {
             editEntitlement.setVisibility(View.GONE);
             txtEntitlement.setVisibility(View.GONE);
 
@@ -436,12 +413,15 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     public Double getAllowedMaximumLeaves() {
         return allowedMaximumLeaves;
     }
+
     public void setAllowedMaximumLeaves(Double allowedMaximumLeaves) {
         this.allowedMaximumLeaves = allowedMaximumLeaves;
     }
+
     public int getSelectedYearlyEntitlement() {
         return selectedYearlyEntitlement;
     }
+
     public void setSelectedYearlyEntitlement(int selectedYearlyEntitlement) {
         this.selectedYearlyEntitlement = selectedYearlyEntitlement;
     }
@@ -450,20 +430,17 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         setSelectedYearlyEntitlement(position);
         findYearlyEntitlement();
 
-        /*
- RequestContext.getCurrentInstance().addCallbackParam("currentBalance", yearlyEntitlement.getCurrentLeaveBalance());
-        RequestContext.getCurrentInstance().addCallbackParam("leaveType", leaveType);
-        RequestContext.getCurrentInstance().addCallbackParam("isOneYearOver", isEmployeeFinishedOneYear());*/
-
     }
 
     private void findYearlyEntitlement() {
         YearlyEntitlementFindOneTask findOne = new YearlyEntitlementFindOneTask();
         findOne.execute();
     }
+
     public YearlyEntitlement getYearlyEntitlement() {
         return yearlyEntitlement;
     }
+
     public void setYearlyEntitlement(YearlyEntitlement yearlyEntitlement) {
         this.yearlyEntitlement = yearlyEntitlement;
     }
@@ -471,12 +448,15 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     public Double getYearlyBalance() {
         return yearlyBalance;
     }
+
     public void setYearlyBalance(Double yearlyBalance) {
         this.yearlyBalance = yearlyBalance;
     }
+
     public String getLeaveType() {
         return leaveType;
     }
+
     public void setLeaveType(String leaveType) {
         this.leaveType = leaveType;
     }
@@ -507,48 +487,46 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     }
 
 
-    private Double findAnnualYearlyEntitlement(int employeeId){
-        try{
+    private Double findAnnualYearlyEntitlement() {
+        try {
             YearlyEntitlementFindAnnualTask findAnnualTask = new YearlyEntitlementFindAnnualTask();
             findAnnualTask.execute();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
-        return	yearlyEntitlement.getYearlyLeaveBalance();
+        return yearlyEntitlement.getYearlyLeaveBalance();
     }
-
-
 
 
     public String getTimings() {
         return timings;
     }
+
     public void setTimings(String timings) {
         this.timings = timings;
-    }
-
-    public void checkHalfDayLeave(Long days){
-        if(days==0.5){
-            numberOfDays=0.5;
-        }
     }
 
     public Date getStartDate() {
         return startDate;
     }
+
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
+
     public Date getEndDate() {
         return endDate;
     }
+
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
+
     public String getReason() {
         return reason;
     }
+
     public void setReason(String reason) {
         this.reason = reason;
     }
@@ -556,6 +534,7 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     public Double getNumberOfDays() {
         return numberOfDays;
     }
+
     public void setNumberOfDays(Double numberOfDays) {
         this.numberOfDays = numberOfDays;
     }
@@ -563,11 +542,14 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
     public Employee getEmployee() {
         return employee;
     }
+
     public void setEmployee(Employee employee) {
         this.employee = employee;
     }
 
     public void setValues() throws ParseException {
+        if(StringUtils.isNotBlank(editNoOfDays.getText().toString()))
+            setNumberOfDays(Double.valueOf(editNoOfDays.getText().toString()));
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         Date date;
@@ -578,78 +560,59 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         date = sdf.parse(editEndDate.getText().toString());
         setEndDate(date);
 
-        setNumberOfDays(Double.valueOf(editNoOfDays.getText().toString()));
         setReason(editReason.getText().toString());
 
     }
 
-
-
-    public String applyLeave() /*throws LeaveApplicationException,RoleNotFound */{
-        // Validating whether number of days is half day or full day or not
-        // valid
-
+    public boolean applyLeave() /*throws LeaveApplicationException,RoleNotFound */ {
+        // Validating whether number of days is half day or full day or not valid
         if (getNumberOfDays() != null) {
             double x = getNumberOfDays().doubleValue() - (long) getNumberOfDays().doubleValue();
             if (!(x == 0.0 || x == 0.5)) {
-
-                // FacesMessage msg = new FacesMessage(getExcptnMesProperty("error.days.validation"), "Leave error message");
-                // msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                // FacesContext.getCurrentInstance().addMessage(null, msg);
-                return "";
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_days_validation, Toast.LENGTH_SHORT).show();
+                return false;
             }
         }
-/*
-        if (isEmployeeFinishedOneYear()) {
+        else {
+            Toast.makeText(getActivity().getApplicationContext(), R.string.error_days_empty, Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
+        if (isEmployeeFinishedOneYear()) {
             //check if number of days applied is more than yearlyLeaveBalance
             if (!(Leave.UNPAID.equalsName(leaveType) || Leave.TIMEINLIEU.equalsName(leaveType))
                     && !(numberOfDays <= yearlyEntitlement.getYearlyLeaveBalance())) {
-                //FacesMessage msg = new FacesMessage(getExcptnMesProperty("error.sick.validation"),"Leave error message");
-                //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                //FacesContext.getCurrentInstance().addMessage(null, msg);
-                return "";
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_sick_validation, Toast.LENGTH_SHORT).show();
+                return false;
             }
         } else {
-            // validating applied leaves is in the range of current balance -
-            // applied leaves > = -3
+            // validating applied leaves is in the range of current balance - applied leaves > = -3
             if ("Annual".equalsIgnoreCase(leaveType) && StringUtils.isNotBlank(leaveType) && StringUtils.isNotEmpty(leaveType)) {
 
                 if (!(yearlyEntitlement.getCurrentLeaveBalance() - numberOfDays >= -3)) {
-                    //FacesMessage msg = new FacesMessage(getExcptnMesProperty("error.sick.validation"), "Leave error message");
-                    //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                    //FacesContext.getCurrentInstance().addMessage(null, msg);
-                    return "";
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_sick_validation, Toast.LENGTH_SHORT).show();
+                    return false;
                 }
             } else if (!("Unpaid".equalsIgnoreCase(leaveType) || Leave.TIMEINLIEU.equalsName(leaveType))
                     && StringUtils.isNotBlank(leaveType) && StringUtils.isNotEmpty(leaveType) && numberOfDays > yearlyEntitlement.getYearlyLeaveBalance()) {
-                //FacesMessage msg = new FacesMessage(getExcptnMesProperty("error.sick.validation"), "Leave error message");
-                //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                //FacesContext.getCurrentInstance().addMessage(null, msg);
-                return "";
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_sick_validation, Toast.LENGTH_SHORT).show();
+                return false;
             }
-        }*/
-        if (numberOfDays < 0.5) {
-            //FacesMessage msg = new FacesMessage(getExcptnMesProperty("error.applyleave.numberofdays"), "Leave error message");
-            //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-            //FacesContext.getCurrentInstance().addMessage(null, msg);
-            return "";
         }
+        if (numberOfDays < 0.5) {
+            Toast.makeText(getActivity().getApplicationContext(), R.string.error_applyleave_numberofdays, Toast.LENGTH_SHORT).show();
 
+            return false;
+        }
         // checking unpaid leaves allowing only maximum 30 days.
         if (Leave.UNPAID.equalsName(leaveType) && numberOfDays > 30) {
-            //FacesMessage msg = new FacesMessage(getExcptnMesProperty("error.unpaid.validation"), "Leave error message");
-            //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-            //FacesContext.getCurrentInstance().addMessage(null, msg);
-            return "";
+            Toast.makeText(getActivity().getApplicationContext(), R.string.error_unpaid_validation, Toast.LENGTH_SHORT).show();
+            return false;
         }
-
         //check if startdate after enddate
         if (startDate.after(endDate)) {
-            //FacesMessage msg = new FacesMessage(getExcptnMesProperty("error.applyleave.datesRange"), "Leave error message.");
-            //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-            //FacesContext.getCurrentInstance().addMessage(null, msg);
-            return "";
+            Toast.makeText(getActivity().getApplicationContext(), R.string.error_applyleave_datesrange, Toast.LENGTH_SHORT).show();
+            return false;
         } else {
 
             leaveTransaction.setApplicationDate(new Date());
@@ -661,14 +624,18 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
             if (!Leave.TIMEINLIEU.equalsName(leaveTransaction.getLeaveType().getName()))
                 leaveTransaction.setYearlyLeaveBalance(getYearlyEntitlement().getYearlyLeaveBalance());
             else
-                leaveTransaction.setYearlyLeaveBalance(findAnnualYearlyEntitlement(employee.getId()));
-
-            leaveTransaction.setReason(getReason());
+                leaveTransaction.setYearlyLeaveBalance(findAnnualYearlyEntitlement());
+            if(StringUtils.isNotBlank(getReason()))
+                leaveTransaction.setReason(getReason());
+            else {
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_reason_empty, Toast.LENGTH_SHORT).show();
+                return false;
+            }
             leaveTransaction.setStartDateTime(getStartDate());
             leaveTransaction.setEndDateTime(getEndDate());
 
 
-            if (getNumberOfDays().doubleValue()	- (long) getNumberOfDays().doubleValue() == 0.5)
+            if (getNumberOfDays().doubleValue() - (long) getNumberOfDays().doubleValue() == 0.5)
                 leaveTransaction.setTimings(getTimings());
             else
                 leaveTransaction.setTimings(null);
@@ -682,10 +649,8 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
                     leaveTransaction.setSickLeaveAttachment(byteData);
                     leaveTransaction.setSickLeaveAttachmentName(leaveAttachmentName);
                 } else {
-                    //FacesMessage msg = new FacesMessage(getExcptnMesProperty("error.sickleaveattachment.mcNotFound"), getExcptnMesProperty("error.sickleaveattachment.mcNotFound"));
-                    //msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                    //FacesContext.getCurrentInstance().addMessage(null, msg);
-                    return "";
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_sickleaveattachment_mcNotFound, Toast.LENGTH_SHORT).show();
+                    return false;
                 }
             }
 
@@ -700,14 +665,13 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
         }
 
-        //TO BE CHANGED
-        //return "/protected/index.jsf?faces-redirect=true";
-        return "";
+        return true;
     }
 
     public Users getUser() {
         return user;
     }
+
     public void setUser(Users user) {
         this.user = user;
     }
@@ -723,7 +687,6 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
             spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             editLeaveType.setAdapter(spinnerAdapter);
             spinnerAdapter.notifyDataSetChanged();
-
         }
 
         @Override
@@ -733,49 +696,32 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
         @Override
         protected List<YearlyEntitlement> doInBackground(String... params) {
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/yearlyEntitlement/findYearlyEntitlementListByEmployee?employeeId={employeeId}";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<YearlyEntitlement[]> response = restTemplate.exchange(url, HttpMethod.GET, request, YearlyEntitlement[].class, employeeId);
-            YearlyEntitlement[] yearlyEntArray = response.getBody();
-            List<YearlyEntitlement> result = Arrays.asList(yearlyEntArray);
-            return result;
+            return yearlyEntitlementWS.findYearlyEntitlementListByEmployee(employeeId);
         }
     }
 
-    private class YearlyEntitlementFindOneTask extends AsyncTask<String, Void, hrm.com.model.YearlyEntitlement>{
+    private class YearlyEntitlementFindOneTask extends AsyncTask<String, Void, hrm.com.model.YearlyEntitlement> {
         @Override
         protected void onPostExecute(YearlyEntitlement result) {
             super.onPostExecute(result);
             yearlyEntitlement = result;
 
-            if(getYearlyEntitlement() != null) {
-                allowedMaximumLeaves=0.0;
+            if (getYearlyEntitlement() != null) {
+                allowedMaximumLeaves = 0.0;
                 setLeaveType(getYearlyEntitlement().getLeaveType().getName());
                 setYearlyBalance(getYearlyEntitlement().getYearlyLeaveBalance());
-                if(isEmployeeFinishedOneYear()){
-                    if(Leave.UNPAID.equalsName(leaveType))
-                        allowedMaximumLeaves=30.0;
+                if (isEmployeeFinishedOneYear()) {
+                    if (Leave.UNPAID.equalsName(leaveType))
+                        allowedMaximumLeaves = 30.0;
                     else
-                        allowedMaximumLeaves=getYearlyEntitlement().getYearlyLeaveBalance();
-                }
-                else{
-                    if(Leave.ANNUAL.equalsName(leaveType))
-                        allowedMaximumLeaves = getYearlyEntitlement().getCurrentLeaveBalance()+3.0;
-                    else if(Leave.UNPAID.equalsName(leaveType))
-                        allowedMaximumLeaves=30.0;
+                        allowedMaximumLeaves = getYearlyEntitlement().getYearlyLeaveBalance();
+                } else {
+                    if (Leave.ANNUAL.equalsName(leaveType))
+                        allowedMaximumLeaves = getYearlyEntitlement().getCurrentLeaveBalance() + 3.0;
+                    else if (Leave.UNPAID.equalsName(leaveType))
+                        allowedMaximumLeaves = 30.0;
                     else
-                        allowedMaximumLeaves=getYearlyEntitlement().getYearlyLeaveBalance();
+                        allowedMaximumLeaves = getYearlyEntitlement().getYearlyLeaveBalance();
                 }
             }
 
@@ -783,96 +729,43 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
         @Override
         protected YearlyEntitlement doInBackground(String... params) {
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/yearlyEntitlement/findOne?yearlyEntitlementId={selectedYearlyEntitlement}";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<YearlyEntitlement> response = restTemplate.exchange(url, HttpMethod.GET, request, YearlyEntitlement.class, selectedYearlyEntitlement);
-            return response.getBody();
+            return yearlyEntitlementWS.findOne(selectedYearlyEntitlement);
         }
-
-
     }
 
-    private class YearlyEntitlementFindAnnualTask extends AsyncTask<String, Void, hrm.com.model.YearlyEntitlement>{
+    private class YearlyEntitlementFindAnnualTask extends AsyncTask<String, Void, hrm.com.model.YearlyEntitlement> {
         @Override
         protected void onPostExecute(YearlyEntitlement result) {
             super.onPostExecute(result);
             yearlyEntitlement = result;
-
         }
 
         @Override
         protected YearlyEntitlement doInBackground(String... params) {
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/yearlyEntitlement/findAnnualYearlyEntitlementOfEmployee?employeeId={employeeId}";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity<String> request = new HttpEntity<String>(headers);
-            ResponseEntity<YearlyEntitlement> response = restTemplate.exchange(url, HttpMethod.GET, request, YearlyEntitlement.class, employeeId);
-            return response.getBody();
+            return yearlyEntitlementWS.findAnnualYearlyEntitlementOfEmployee(employeeId);
         }
-
-
-
     }
 
-    private class ProcessAppliedLeaveOfEmployeeTask  extends AsyncTask<String, Void, LeaveTransaction>{
+    private class ProcessAppliedLeaveOfEmployeeTask extends AsyncTask<String, Void, LeaveTransaction> {
 
         @Override
         protected void onPostExecute(LeaveTransaction result) {
             super.onPostExecute(result);
             leavePersistBean = result;
 
-            setSelectedYearlyEntitlement(0);
-            setLeaveType("");
-            setStartDate(null);
-            setEndDate(null);
-            setReason("");
+            SendIntimationEmailTask sendEmail = new SendIntimationEmailTask();
+            sendEmail.execute();
 
         }
 
         @Override
         protected LeaveTransaction doInBackground(String... params) {
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveTransaction/processAppliedLeaveOfEmployee";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity request = new HttpEntity(leaveTransaction, headers);
-            ResponseEntity<LeaveTransaction> response = restTemplate.exchange(url, HttpMethod.POST, request, LeaveTransaction.class);
-            return response.getBody();
+            return leaveTransactionWS.processAppliedLeaveOfEmployee(leaveTransaction);
         }
-
-
 
     }
 
-    private class GetLeaveRuleByRoleAndLeaveTypeTask  extends AsyncTask<String, Void, LeaveRuleBean>{
+    private class GetLeaveRuleByRoleAndLeaveTypeTask extends AsyncTask<String, Void, LeaveRuleBean> {
 
         GetLeaveRuleByRoleAndLeaveTypeWrapper leaveRuleWrapper;
 
@@ -895,29 +788,32 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
         }
 
         @Override
-          protected LeaveRuleBean doInBackground(String... params) {
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveTransaction/getLeaveRuleByRoleAndLeaveType";
-            RestTemplate restTemplate = new RestTemplate();
+        protected LeaveRuleBean doInBackground(String... params) {
+            return leaveTransactionWS.getLeaveRuleByRoleAndLeaveType(leaveRuleWrapper);
 
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity request = new HttpEntity(leaveRuleWrapper, headers);
-            ResponseEntity<LeaveRuleBean> response = restTemplate.exchange(url, HttpMethod.POST, request, LeaveRuleBean.class);
-            return response.getBody();
         }
-
-
 
     }
 
-    private class SaveLeaveApprovalDecisionsTask  extends AsyncTask<String, Void, LeaveFlowDecisionsTaken>{
+    private class SendIntimationEmailTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected void onPostExecute(Void result) {
+            setSelectedYearlyEntitlement(0);
+            setLeaveType("");
+            setStartDate(null);
+            setEndDate(null);
+            setReason("");
+
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            return leaveApplicationEmailWS.sendingIntimationEmail(leavePersistBean);
+        }
+    }
+
+    private class SaveLeaveApprovalDecisionsTask extends AsyncTask<String, Void, LeaveFlowDecisionsTaken> {
         @Override
         protected void onPostExecute(LeaveFlowDecisionsTaken result) {
             super.onPostExecute(result);
@@ -931,24 +827,7 @@ public class ApplyLeave extends Fragment implements TaskListener, AdapterView.On
 
         @Override
         protected LeaveFlowDecisionsTaken doInBackground(String... params) {
-            // The connection URL
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveTransaction/saveLeaveApprovalDecisions";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity request = new HttpEntity(null, headers);
-            ResponseEntity<LeaveFlowDecisionsTaken> response = restTemplate.exchange(url, HttpMethod.POST, request, LeaveFlowDecisionsTaken.class);
-            return response.getBody();
+            return leaveTransactionWS.saveLeaveApprovalDecisions();
         }
-
-
-
     }
 }

@@ -1,14 +1,32 @@
 <resources>
     <string name="app_name">hrmPrototype</string>
+    <string name="title_activity_home">HomeActivity</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_logged_in">LoggedIn</string>
-
+    <!--List empty-->
     <string name="no_approve_leave">No leaves to be approved</string>
     <string name="no_upcoming_leave">No upcoming leaves</string>
     <string name="no_leave_history">No leave history</string>
     <string name="no_address">No address added</string>
+
+    <!--Error Messages-->
+    <string name="error_login_validation">Error: username or password not valid.</string>
+    <string name="error_days_validation">Number of days should be half day or full day.</string>
+    <string name="error_dates_validation">Error : Unable to parse selected dates.</string>
+    <string name="error_reason_empty">Please enter reason.</string>
+    <string name="error_days_empty">Please enter number of days.</string>
+    <string name="error_sick_validation">Insufficient Leave Balance. Please apply for Unpaid Leave or try again next month.</string>
+    <string name="error_applyleave_numberofdays">Error : You can\'t apply less than half day leave.</string>
+    <string name="error_applyleave_datesrange">Error : Invalid End Date. End Date should be after Start Date</string>
+    <string name="error_unpaid_validation">Error : Unpaid leaves can\'t exceed more than 30 at once.</string>
+    <string name="error_sickleaveattachment_mcNotFound">Please attach your Medical Certificate.</string>
+    <string name="error_sickleaveattachment_filecreation">Error : Unable to create file.</string>
+
+    <!--Info Messages-->
+    <string name="info_applyleave">Info : Leave Applied. You will be notified if it is approved or rejected.</string>
+    <string name="info_sickleaveattachment_cameraupload">Info : File has been attached from camera.</string>
+    <string name="info_sickleaveattachment_galleryupload">Info : File has been attached from gallery.</string>
+    <string name="info_rejectleave">Leave has been rejected.</string>
+    <string name="info_approveleave">Leave has been approved.</string>
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
@@ -69,13 +87,4 @@
         <item>Upload from gallery</item>
     </string-array>
 
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_logged_in_main">LoggedInMain</string>
-    <string name="title_activity_apply_leave">ApplyLeave</string>
-    <string name="title_activity_main2">Main2Activity</string>
-    <string name="title_activity_leave_main">LeaveMain</string>
-    <string name="title_activity_my_leave">MyLeaveActivity</string>
-    <string name="title_activity_home">HomeActivity</string>
-    <string name="title_activity_master">MasterActivity</string>
 </resources>

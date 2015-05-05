@@ -37,4 +37,18 @@ public class LeaveApplicationFlowWS {
 
     }
 
+    public Boolean UpdateLeaveBalancesOnceApprovedTask(Boolean isApproved, LeaveTransaction leaveTransactionPersist){
+        String url;
+        if (isApproved)
+            url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationFlow/updateLeaveBalancesOnceApproved";
+        else
+            url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationFlow/updateLeaveBalancesOnceRejected";
+
+
+        HttpEntity request = new HttpEntity(leaveTransactionPersist, customRT.getHeaders());
+        return restTemplate.exchange(url, HttpMethod.POST, request, Boolean.class).getBody();
+
+
+    }
+
 }

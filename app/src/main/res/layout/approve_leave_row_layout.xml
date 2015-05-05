@@ -54,23 +54,28 @@
         <TextView
             android:id="@+id/txtApproveEmployeeName"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="#000000"/>
         <TextView
             android:id="@+id/txtApproveLeaveType"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="#000000"/>
         <TextView
             android:id="@+id/txtApproveDates"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="#000000"/>
         <TextView
             android:id="@+id/txtApproveNoOfDays"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="#000000"/>
         <TextView
             android:id="@+id/txtApproveReason"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="#000000"/>
 
 
     </LinearLayout>

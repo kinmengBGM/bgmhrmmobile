@@ -125,6 +125,10 @@ public class HomeActivity extends ActionBarActivity {
         return hasLeaveApprovalAccess;
     }
 
+    public boolean getHasApplyLeaveAccess(){
+        return hasApplyLeaveAccess;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -140,8 +144,7 @@ public class HomeActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class DrawerItemClickListener implements
-            ListView.OnItemClickListener {
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position,
                                 long id) {

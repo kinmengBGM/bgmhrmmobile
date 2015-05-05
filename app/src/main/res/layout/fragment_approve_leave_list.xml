@@ -14,6 +14,6 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/no_approve_leave"
         android:id="@+id/noApproveLeave"
-        android:layout_gravity="center_horizontal|top"/>
+        android:layout_centerInParent="true"/>
 
 </RelativeLayout>

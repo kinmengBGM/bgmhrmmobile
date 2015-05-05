@@ -10,16 +10,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.daimajia.swipe.SwipeLayout;
 
 import java.util.List;
 
+import hrm.com.custom.fragment.RejectLeaveDialog;
+import hrm.com.custom.fragment.SickLeaveDialog;
+import hrm.com.custom.listener.RejectLeaveListener;
+import hrm.com.custom.listener.TaskListener;
 import hrm.com.model.Employee;
 import hrm.com.model.LeaveTransaction;
+import hrm.com.model.Users;
 import hrm.com.webservice.LeaveApplicationFlowWS;
+import hrm.com.webservice.LeaveApprovalManagement;
 import hrm.com.webservice.LeaveTransactionWS;
 
 
@@ -30,11 +38,17 @@ import hrm.com.webservice.LeaveTransactionWS;
 public class HomeFragment extends Fragment implements View.OnClickListener{
 
     private Employee employee;
+    private Users user;
+
+    private String username, password;
 
     private int userId;
 
+    private RejectLeaveDialog rej;
+
     private TextView uReason, uStatus, uDates;
     private TextView aEmployee, aLeaveType, aDates, aNoOfDays, aReason;
+    private ImageView sickLeaveAttachment, rejectView, approveView;
 
     private RelativeLayout upcomingLeaveLayout, approveLeaveLayout, approveNoDataLayout, upcomingNoDataLayout, upcomingGotDataLayout;
     private SwipeLayout approveGotDataLayout;
@@ -50,10 +64,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         ((HomeActivity)getActivity()).enableNavigationDrawer(true);
         ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Home");
 
-        String username = ((HomeActivity) getActivity()).getUsername();
-        String password = ((HomeActivity) getActivity()).getPassword();
+        username = ((HomeActivity) getActivity()).getUsername();
+        password = ((HomeActivity) getActivity()).getPassword();
         this.userId = ((HomeActivity) getActivity()).getActiveUser().getId();
-        employee=((HomeActivity)getActivity()).getActiveEmployee();
+        this.user = ((HomeActivity) getActivity()).getActiveUser();
+        this.employee=((HomeActivity)getActivity()).getActiveEmployee();
 
         leaveTransactionWS = new LeaveTransactionWS(username, password);
         leaveApplicationFlowWS = new LeaveApplicationFlowWS(username, password);
@@ -65,6 +80,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
     }
 
     public void initUiValues(View rootView){
+        sickLeaveAttachment = (ImageView)rootView.findViewById(R.id.sickLeaveAttachment);
+        rejectView = (ImageView)rootView.findViewById(R.id.rejectView);
+        approveView = (ImageView)rootView.findViewById(R.id.approveView);
 
         TextView employeeName = (TextView) rootView.findViewById(R.id.employeeName);
         TextView employeePosition = (TextView) rootView.findViewById(R.id.employeePosition);
@@ -99,6 +117,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         approveGotDataLayout = (SwipeLayout) rootView.findViewById(R.id.layoutHomeApproveLeaveGotData);
         upcomingNoDataLayout = (RelativeLayout) rootView.findViewById(R.id.layoutHomeUpcomingLeaveNoData);
         upcomingGotDataLayout = (RelativeLayout) rootView.findViewById(R.id.layoutHomeUpcomingLeaveGotData);
+
+
+        if(((HomeActivity)getActivity()).getHasApplyLeaveAccess())
+            btnApplyLeave.setVisibility(View.VISIBLE);
+        else
+            btnApplyLeave.setVisibility(View.GONE);
+
 
         if(((HomeActivity)getActivity()).getHasUpcomingLeaveAccess()){
 
@@ -184,7 +209,61 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
             approveNoDataLayout.setVisibility(View.GONE);
             approveGotDataLayout.setVisibility(View.VISIBLE);
 
-            LeaveTransaction first = result.get(0);
+            final LeaveTransaction first = result.get(0);
+
+            if((first.getLeaveType().getDescription()).equals("Sick leave"))
+                sickLeaveAttachment.setVisibility(View.VISIBLE);
+            else
+                sickLeaveAttachment.setVisibility(View.GONE);
+
+            //Sick leave button
+            sickLeaveAttachment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SickLeaveDialog sickLeaveDialog = new SickLeaveDialog(first.getSickLeaveAttachment());
+                    sickLeaveDialog.show(getActivity().getSupportFragmentManager(), "AttachmentDialog");
+                }
+            });
+
+            //Reject button
+            rejectView.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    rej = new RejectLeaveDialog(new RejectLeaveListener() {
+                        @Override
+                        public void onRejectLeave(String reason) {
+                            LeaveApprovalManagement leaveApprovalManagement =
+                                    new LeaveApprovalManagement(username, password, first.getId(), user);
+                            leaveApprovalManagement.doRejectLeaveRequest(reason, new TaskListener() {
+                                @Override
+                                public void onTaskCompleted() {
+                                    rej.dismiss();
+                                    Toast.makeText(getActivity().getApplicationContext(), R.string.info_rejectleave, Toast.LENGTH_SHORT).show();
+                                    PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
+                                    repopulate.execute();
+                                }
+                            });
+                        }
+                    });
+                    rej.show(getFragmentManager(), "Reject Leave");
+                }
+            });
+
+            approveView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    LeaveApprovalManagement leaveApprovalManagement =
+                            new LeaveApprovalManagement(username, password, first.getId(), user);
+                    leaveApprovalManagement.doApproveLeaveRequest(new TaskListener() {
+                        @Override
+                        public void onTaskCompleted() {
+                            Toast.makeText(getActivity().getApplicationContext(), R.string.info_approveleave, Toast.LENGTH_SHORT).show();
+                            PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
+                            repopulate.execute();
+                        }
+                    });
+                }
+            });
 
             aEmployee.setText(first.getEmployee().getName());
             aLeaveType.setText(first.getLeaveType().getDescription());
