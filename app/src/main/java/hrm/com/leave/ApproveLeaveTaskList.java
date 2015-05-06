@@ -89,7 +89,7 @@ public class ApproveLeaveTaskList extends Fragment {
 
     public void setApproveLeaveList() {
 
-        adpt = new ApproveLeaveAdapter(getActivity().getApplicationContext(), R.layout.approve_leave_row_layout, approveLeaveList,
+        adpt = new ApproveLeaveAdapter(getActivity().getApplicationContext(), R.layout.row_approve_leave, approveLeaveList,
 
                 new ApproveLeaveListener() {
                     @Override

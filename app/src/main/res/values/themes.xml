@@ -10,18 +10,21 @@
         <item name="android:editTextStyle">@style/MyEditText</item>
 
         <item name="android:spinnerStyle">@style/MySpinner</item>
-        <item name="android:spinnerDropDownItemStyle">@style/MySpinnerDropDownItemStyle</item> <!--Spinner drop down item-->
-        <item name="android:spinnerItemStyle">@style/MySpinnerItemStyle</item> <!--Spinner main item-->
+        <!--Spinner drop down item-->
+        <item name="android:spinnerDropDownItemStyle">@style/MySpinnerDropDownItemStyle</item>
+        <!--Spinner main item-->
+        <item name="android:spinnerItemStyle">@style/MySpinnerItemStyle</item>
 
-        <!--        <item name="android:listViewStyle">@style/MySpinnerDropDownItemStyle</item>
-                <item name="android:listViewWhiteStyle">@style/MySpinnerDropDownItemStyle</item>-->
+        <item name="android:listViewStyle">@style/MyListViewStyle</item>
+        <item name="android:expandableListViewStyle">@style/MyListViewStyle</item>
+
+        <item name="android:listViewWhiteStyle">@style/MySpinnerDropDownItemStyle</item>
 
         <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
         <item name="android:dialogTheme">@style/MyDialogStyle</item>
         <item name="android:buttonStyle">@style/ButtonStyle</item>
 
-        <item name="android:expandableListViewStyle">@style/MyListViewStyle</item>
-
+        <item name="android:textAppearanceListItem">@style/TextAppearanceListView</item>
         <!--Support library compatibility-->
         <item name="actionBarStyle">@style/MyActionBar</item>
 
@@ -146,13 +149,17 @@
     </style>
 
     <style name="MyListViewStyle">
-        <item name="android:background">#000000</item>
         <item name="android:textAppearanceListItem">@style/TextAppearanceListView</item>
+        <item name="android:childDivider">#ffffff</item>
+        <item name="android:divider">@color/base_grey</item>
+        <item name="android:dividerHeight">1dp</item>
+        <item name="android:textColor">#000000</item>
     </style>
 
     <style name="TextAppearanceListView" parent="TextAppearance.AppCompat">
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">#000000</item>
+
     </style>
 
     <style name="SwipeView">

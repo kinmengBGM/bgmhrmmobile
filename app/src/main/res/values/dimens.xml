@@ -7,7 +7,7 @@
 
     <dimen name="padding_textbox">10dp</dimen>
     <dimen name="padding_textbox_icon">40dp</dimen>
-    <dimen name="margin_textbox_bottom">15dp</dimen>
+    <dimen name="margin_textbox_bottom">17dp</dimen>
 
     <dimen name="padding_form">15dp</dimen>
 

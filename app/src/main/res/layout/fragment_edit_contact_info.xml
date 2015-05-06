@@ -30,7 +30,8 @@
             <EditText
                 android:id="@+id/editWorkPhone"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
 
             <TextView
                 android:id="@+id/personalPhone"
@@ -42,7 +43,8 @@
             <EditText
                 android:id="@+id/editPersonalPhone"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
 
             <TextView
                 android:id="@+id/workEmail"
@@ -54,7 +56,8 @@
             <EditText
                 android:id="@+id/editWorkEmail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
 
             <TextView
                 android:id="@+id/personalEmail"
@@ -66,7 +69,8 @@
             <EditText
                 android:id="@+id/editPersonalEmail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

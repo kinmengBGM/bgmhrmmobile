@@ -7,16 +7,18 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
-import hrm.com.custom.adapter.LeaveAdapter;
+import hrm.com.custom.adapter.LeaveByYearAdapter;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.LeaveTransaction;
@@ -26,19 +28,16 @@ import hrm.com.webservice.LeaveTransactionWS;
  * Created by Beans on 4/7/2015.
  */
 @SuppressLint("ValidFragment")
-public class LeaveHistory extends Fragment{
-    private ExpandableListAdapter listAdapter;
-    private List<LeaveTransaction> listData;
-
+public class LeaveHistory extends Fragment {
     private ExpandableListView lView;
-    private TextView noLeaveHistory;
+    private TextView noLeave;
 
     private int userId;
 
     private LeaveTransactionWS leaveTransactionWS;
 
     @Override
-    public void onCreate(Bundle savedInstanceState){
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
@@ -46,17 +45,17 @@ public class LeaveHistory extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_history_leave, container, false);
 
-        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
-        ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Leave History");
+        ((HomeActivity) getActivity()).enableNavigationDrawer(true);
+        ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Leave History");
 
         String username = ((HomeActivity) getActivity()).getUsername();
         String password = ((HomeActivity) getActivity()).getPassword();
         this.userId = ((HomeActivity) getActivity()).getActiveUser().getId();
 
-        lView = (ExpandableListView) rootView.findViewById(R.id.listViewAddress);
-        noLeaveHistory = (TextView) rootView.findViewById(R.id.noLeaveHistory);
+        lView = (ExpandableListView) rootView.findViewById(R.id.expandableList);
+        noLeave = (TextView) rootView.findViewById(R.id.noLeave);
 
         leaveTransactionWS = new LeaveTransactionWS(username, password);
 
@@ -67,25 +66,39 @@ public class LeaveHistory extends Fragment{
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         getActivity().invalidateOptionsMenu();
     }
 
-    public void setListAdapter(List<LeaveTransaction> result){
-        listData = new ArrayList<LeaveTransaction>();
-        listAdapter = new LeaveAdapter(getActivity().getApplicationContext(), listData);
+    public void sortByYear(List<LeaveTransaction> result) throws ParseException {
 
-        Collections.sort(result, new Comparator<LeaveTransaction>() {
-            public int compare(LeaveTransaction o1, LeaveTransaction o2) {
-                if (o1.getStartDateTime() == null || o2.getStartDateTime() == null)
-                    return 0;
-                return o1.getStartDateTime().compareTo(o2.getStartDateTime());
+        HashMap<Integer, List<LeaveTransaction>> map = new HashMap<Integer, List<LeaveTransaction>>(); //list data
+
+        for (LeaveTransaction leaveTransaction : result) {
+            String startDate = leaveTransaction.fetchStartTimeStr();
+            int year;
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            Date parse = sdf.parse(startDate);
+            Calendar c = Calendar.getInstance();
+            c.setTime(parse);
+            year = c.get(Calendar.YEAR);
+
+            if (map.get(year) == null) {
+                map.put(year, new ArrayList<LeaveTransaction>());
             }
-        });
+            map.get(year).add(leaveTransaction);
+        }
 
-        listData.addAll(result);
-        lView.setAdapter(listAdapter);
+        List<Integer> listDataHeader = new ArrayList<Integer>(); // header titles
+
+        for (int key : map.keySet()) {
+            listDataHeader.add(key);
+        }
+
+        LeaveByYearAdapter adp = new LeaveByYearAdapter(getActivity().getBaseContext(), listDataHeader, map);
+        lView.setAdapter(adp);
     }
 
     private class PopulateLeaveHistoryTask extends AsyncTask<String, Void, List<LeaveTransaction>> {
@@ -95,14 +108,18 @@ public class LeaveHistory extends Fragment{
             super.onPostExecute(result);
 
             if(result.size() > 0) {
-                noLeaveHistory.setVisibility(View.GONE);
+                noLeave.setVisibility(View.GONE);
                 lView.setVisibility(View.VISIBLE);
-                setListAdapter(result);
+                try {
+                    sortByYear(result);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
             else{
-                noLeaveHistory.setVisibility(View.VISIBLE);
+                noLeave.setVisibility(View.VISIBLE);
                 lView.setVisibility(View.GONE);
-                noLeaveHistory.setText(R.string.no_leave_history);
+                noLeave.setText(R.string.no_leave_history);
             }
         }
 

@@ -41,7 +41,7 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction>{
         View v = convertView;
         if (v == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = inflater.inflate(R.layout.approve_leave_row_layout, null);
+            v = inflater.inflate(R.layout.row_approve_leave, null);
         }
 
         //SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd-MM-yyyy");

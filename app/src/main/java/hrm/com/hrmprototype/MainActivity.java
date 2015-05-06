@@ -1,8 +1,10 @@
 package hrm.com.hrmprototype;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.system.ErrnoException;
@@ -60,6 +62,7 @@ public class MainActivity extends ActionBarActivity {
             dialog.show();
         }
 
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         protected Boolean doInBackground(String... s) {
             try {

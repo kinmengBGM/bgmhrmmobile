@@ -20,7 +20,7 @@ public class AddressAdapter extends ArrayAdapter<Address> {
     Context context;
 
     public AddressAdapter(List<Address> addressList, Context ctx) {
-        super(ctx, R.layout.address_row_layout, addressList);
+        super(ctx, R.layout.row_address, addressList);
         this.addressList = addressList;
         this.context = ctx;
     }
@@ -32,7 +32,7 @@ public class AddressAdapter extends ArrayAdapter<Address> {
         View v = convertView;
         if (v == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = inflater.inflate(R.layout.address_row_layout, null);
+            v = inflater.inflate(R.layout.row_address, null);
         }
         Address p = addressList.get(position);
         TextView addTypeView = (TextView) v.findViewById(R.id.addressType);

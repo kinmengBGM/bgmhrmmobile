@@ -29,9 +29,10 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile 'com.android.support:recyclerview-v7:21.0.0'
     compile 'com.android.support:support-v4:21.+'
-    compile "com.daimajia.swipelayout:library:1.2.0@aar"
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'commons-codec:commons-codec:1.10'
+
+    compile "com.daimajia.swipelayout:library:1.2.0@aar"
 }
 android {
     packagingOptions {

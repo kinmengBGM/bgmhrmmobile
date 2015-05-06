@@ -7,14 +7,13 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import hrm.com.custom.adapter.LeaveAdapter;
+import hrm.com.custom.adapter.UpcomingLeaveAdapter;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.LeaveTransaction;
@@ -26,11 +25,11 @@ import hrm.com.webservice.LeaveTransactionWS;
 @SuppressLint("ValidFragment")
 public class UpcomingLeave extends Fragment {
 
-    private ExpandableListAdapter listAdapter;
+    private UpcomingLeaveAdapter listAdapter;
     private List<LeaveTransaction> listData;
 
-    private ExpandableListView lView;
-    private TextView noLeaveHistory;
+    private ListView lView;
+    private TextView noLeave;
 
     private int userId;
 
@@ -45,7 +44,7 @@ public class UpcomingLeave extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_upcoming_leave, container, false);
 
 
         ((HomeActivity) getActivity()).enableNavigationDrawer(true);
@@ -55,8 +54,8 @@ public class UpcomingLeave extends Fragment {
         String password = ((HomeActivity) getActivity()).getPassword();
         this.userId = ((HomeActivity) getActivity()).getActiveUser().getId();
 
-        lView = (ExpandableListView) rootView.findViewById(R.id.listViewAddress);
-        noLeaveHistory = (TextView) rootView.findViewById(R.id.noLeaveHistory);
+        lView = (ListView) rootView.findViewById(R.id.listView);
+        noLeave = (TextView) rootView.findViewById(R.id.noLeave);
 
         leaveTransactionWS = new LeaveTransactionWS(username, password);
 
@@ -68,7 +67,7 @@ public class UpcomingLeave extends Fragment {
 
     public void setListAdapter(List<LeaveTransaction> result) {
         listData = new ArrayList<LeaveTransaction>();
-        listAdapter = new LeaveAdapter(getActivity().getApplicationContext(), listData);
+        listAdapter = new UpcomingLeaveAdapter(getActivity().getApplicationContext(), listData);
 
         listData.addAll(result);
         lView.setAdapter(listAdapter);
@@ -81,13 +80,13 @@ public class UpcomingLeave extends Fragment {
             super.onPostExecute(result);
 
             if (result.size() > 0) {
-                noLeaveHistory.setVisibility(View.GONE);
+                noLeave.setVisibility(View.GONE);
                 lView.setVisibility(View.VISIBLE);
                 setListAdapter(result);
             } else {
-                noLeaveHistory.setVisibility(View.VISIBLE);
+                noLeave.setVisibility(View.VISIBLE);
                 lView.setVisibility(View.GONE);
-                noLeaveHistory.setText(R.string.no_upcoming_leave);
+                noLeave.setText(R.string.no_upcoming_leave);
             }
         }
 

@@ -30,7 +30,8 @@
             <EditText
                 android:id="@+id/editEmployeeNo"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
 
             <TextView
                 android:id="@+id/position"
@@ -42,7 +43,8 @@
             <EditText
                 android:id="@+id/editPosition"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
 
 
             <TextView
@@ -56,7 +58,8 @@
                 android:id="@+id/editGrade"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:entries="@array/gradeItems" />
+                android:entries="@array/gradeItems"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
 
 
             <TextView
@@ -70,7 +73,8 @@
                 android:id="@+id/editEmployeeType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:entries="@array/empTypeItems" />
+                android:entries="@array/empTypeItems"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
 
             <TextView
                 android:id="@+id/department"
@@ -83,7 +87,8 @@
                 android:id="@+id/editDepartment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:entries="@array/departmentItems" />
+                android:entries="@array/departmentItems"
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
 
             <TextView
                 android:id="@+id/joinDate"

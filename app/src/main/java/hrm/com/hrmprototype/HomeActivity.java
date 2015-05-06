@@ -4,11 +4,11 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -399,4 +399,7 @@ public class HomeActivity extends ActionBarActivity {
 
     public Employee getActiveEmployee(){ return activeEmployee; }
     public void setActiveEmployee(Employee activeEmployee){ this.activeEmployee = activeEmployee;}
+
+
+
 }
