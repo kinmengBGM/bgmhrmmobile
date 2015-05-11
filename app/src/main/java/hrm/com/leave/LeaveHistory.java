@@ -1,14 +1,18 @@
 package hrm.com.leave;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,9 +41,9 @@ public class LeaveHistory extends Fragment {
     private LeaveTransactionWS leaveTransactionWS;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        inflater.inflate(R.menu.menu_home, menu);
     }
 
     @Override
@@ -49,6 +53,7 @@ public class LeaveHistory extends Fragment {
 
         ((HomeActivity) getActivity()).enableNavigationDrawer(true);
         ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Leave History");
+        setHasOptionsMenu(true);
 
         String username = ((HomeActivity) getActivity()).getUsername();
         String password = ((HomeActivity) getActivity()).getPassword();
@@ -102,6 +107,7 @@ public class LeaveHistory extends Fragment {
     }
 
     private class PopulateLeaveHistoryTask extends AsyncTask<String, Void, List<LeaveTransaction>> {
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
         @Override
         protected void onPostExecute(List<LeaveTransaction> result) {
@@ -113,7 +119,7 @@ public class LeaveHistory extends Fragment {
                 try {
                     sortByYear(result);
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_parseLeaveHistory, Toast.LENGTH_SHORT).show();
                 }
             }
             else{
@@ -121,22 +127,20 @@ public class LeaveHistory extends Fragment {
                 lView.setVisibility(View.GONE);
                 noLeave.setText(R.string.no_leave_history);
             }
+            dialog.dismiss();
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            dialog.setMessage("Loading leave history...");
+            dialog.show();
         }
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return getLeaveHistory();
-
-        }
-
-        public List<LeaveTransaction> getLeaveHistory() {
-
             return leaveTransactionWS.getAllLeavesAppliedByEmployee(userId);
+
         }
     }
 

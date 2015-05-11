@@ -10,8 +10,8 @@
         android:layout_marginTop="10dp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="#757678"
-        android:textColor="#f5c227"
+        android:background="@drawable/drawer_header"
+        android:textColor="@color/base_grey"
         android:textIsSelectable="false"/>
 
 </LinearLayout>

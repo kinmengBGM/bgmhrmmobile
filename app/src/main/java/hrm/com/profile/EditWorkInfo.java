@@ -4,7 +4,6 @@ package hrm.com.profile;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,13 +17,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,23 +24,20 @@ import java.util.List;
 
 import hrm.com.custom.fragment.DatePickerFragment;
 import hrm.com.custom.listener.DatePickerListener;
-import hrm.com.custom.listener.TaskListener;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.Address;
 import hrm.com.model.Employee;
-import hrm.com.model.Users;
+import hrm.com.webservice.EmployeeWS;
 import hrm.com.wrapper.UpdateEmployeeWrapper;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelectedListener, TaskListener, View.OnClickListener {
+public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelectedListener,View.OnClickListener {
 
     private Employee employee;
-    private Users user;
 
-    private String username, password;
     private int grade, employeeType, department;
 
     private EditText editEmployeeNo;
@@ -58,11 +47,7 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
     private Spinner editGrade, editEmployeeType, editDepartment;
 
     private List<Address> existingAddress;
-
-    public EditWorkInfo() {
-        // Required empty public constructor
-    }
-
+    private EmployeeWS employeeWS;
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -73,25 +58,22 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {/*
-        // Inflate the layout for this fragment
-        ((HomeActivity)getActivity()).enableNavigationDrawer(false);
-        ActionBar actionBar = ((HomeActivity)getActivity()).getSupportActionBar();
-        actionBar.setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP);*/
+                             Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_edit_work_info, container, false);
 
         ((HomeActivity) getActivity()).enableNavigationDrawer(false);
-        ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Edit Basic Info");
+        ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Edit Work Info");
         ((HomeActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ((HomeActivity) getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         setHasOptionsMenu(true);
 
         employee = ((HomeActivity) getActivity()).getActiveEmployee();
-        ((HomeActivity) getActivity()).setActiveEmployee(employee);
-        username = ((HomeActivity) getActivity()).getUsername();
-        password = ((HomeActivity) getActivity()).getPassword();
-        user = ((HomeActivity) getActivity()).getActiveUser();
+        String username = ((HomeActivity) getActivity()).getUsername();
+        String password = ((HomeActivity) getActivity()).getPassword();
+
+        employeeWS = new EmployeeWS(username, password);
+
         initLayout(rootView);
         initValues();
 
@@ -172,28 +154,18 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
         existingAddress = new ArrayList<Address>();
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Get item selected and deal with it
         switch (item.getItemId()) {
             case R.id.action_save:
-                //called when the up affordance/carat in actionbar is pressed
-
                 UpdateProfileTask update = new UpdateProfileTask();
                 update.execute();
                 Toast.makeText(getActivity().getApplicationContext(), "Profile Updated", Toast.LENGTH_SHORT).show();
+                getActivity().onBackPressed();
+
                 return true;
         }
         return false;
-    }
-
-    @Override
-    public void onTaskCompleted() {
-
-        ((HomeActivity) getActivity()).setActiveEmployee(employee);
-        getActivity().onBackPressed();
-
     }
 
     @Override
@@ -223,7 +195,6 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
         }
     }
 
-
         private class UpdateProfileTask extends AsyncTask<String, Void, Employee> {
 
             private UpdateEmployeeWrapper updateEmployeeWrapper;
@@ -245,27 +216,14 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
 
             @Override
             protected void onPostExecute(Employee result) {
-                onTaskCompleted();
+                employee = result;
             }
 
 
             @Override
             protected Employee doInBackground(String... params) {
-                // The connection URL
-                String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/employee/updateEmployee";
-                RestTemplate restTemplate = new RestTemplate();
 
-                HttpHeaders headers = new HttpHeaders();
-                String plainCreds = username + ":" + password;
-                String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-                headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-                // Add the String message converter
-                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-                HttpEntity request = new HttpEntity(updateEmployeeWrapper, headers);
-                ResponseEntity<Employee> response = restTemplate.exchange(url, HttpMethod.POST, request, Employee.class);
-                return response.getBody();
+                return employeeWS.updateEmployee(updateEmployeeWrapper);
             }
         }
     }

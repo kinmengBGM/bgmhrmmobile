@@ -1,10 +1,13 @@
 package hrm.com.leave;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -34,11 +37,10 @@ public class UpcomingLeave extends Fragment {
     private int userId;
 
     private LeaveTransactionWS leaveTransactionWS;
-
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        inflater.inflate(R.menu.menu_home, menu);
     }
 
     @Override
@@ -49,6 +51,7 @@ public class UpcomingLeave extends Fragment {
 
         ((HomeActivity) getActivity()).enableNavigationDrawer(true);
         ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Upcoming Leave");
+        setHasOptionsMenu(true);
 
         String username = ((HomeActivity) getActivity()).getUsername();
         String password = ((HomeActivity) getActivity()).getPassword();
@@ -74,6 +77,7 @@ public class UpcomingLeave extends Fragment {
     }
 
     private class PopulateUpcomingLeaveTask extends AsyncTask<String, Void, List<LeaveTransaction>> {
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
         @Override
         protected void onPostExecute(List<LeaveTransaction> result) {
@@ -88,11 +92,14 @@ public class UpcomingLeave extends Fragment {
                 lView.setVisibility(View.GONE);
                 noLeave.setText(R.string.no_upcoming_leave);
             }
+            dialog.dismiss();
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            dialog.setMessage("Loading upcoming leaves...");
+            dialog.show();
         }
 
         @Override

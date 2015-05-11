@@ -114,6 +114,7 @@ public class EditBasicDetails extends Fragment implements AdapterView.OnItemSele
         editMarital.setOnItemSelectedListener(this);
 
     }
+
     public void initUiValues(){
 
 

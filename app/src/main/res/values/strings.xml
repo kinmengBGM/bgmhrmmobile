@@ -1,6 +1,8 @@
 <resources>
-    <string name="app_name">hrmPrototype</string>
+    <string name="app_name">Beans HRM</string>
     <string name="title_activity_home">HomeActivity</string>
+
+    <string name="host_address">http://192.168.0.202:8080/restWS-0.0.1-SNAPSHOT</string>
 
     <!--List empty-->
     <string name="no_approve_leave">No leaves to be approved</string>
@@ -9,7 +11,8 @@
     <string name="no_address">No address added</string>
 
     <!--Error Messages-->
-    <string name="error_login_validation">Error: username or password not valid.</string>
+    <string name="error_login_validation">Error: Username or password not valid.</string>
+    <string name="error_timeout_validation">Error: Unable to connect to server.</string>
     <string name="error_days_validation">Number of days should be half day or full day.</string>
     <string name="error_dates_validation">Error : Unable to parse selected dates.</string>
     <string name="error_reason_empty">Please enter reason.</string>
@@ -20,6 +23,7 @@
     <string name="error_unpaid_validation">Error : Unpaid leaves can\'t exceed more than 30 at once.</string>
     <string name="error_sickleaveattachment_mcNotFound">Please attach your Medical Certificate.</string>
     <string name="error_sickleaveattachment_filecreation">Error : Unable to create file.</string>
+    <string name="error_parseLeaveHistory">Error : Unable to retrieve leave history.</string>
 
     <!--Info Messages-->
     <string name="info_applyleave">Info : Leave Applied. You will be notified if it is approved or rejected.</string>

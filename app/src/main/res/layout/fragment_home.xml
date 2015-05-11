@@ -1,8 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/login_background"
-    android:padding="@dimen/margin_content_frame">
+    android:padding="@dimen/margin_content_frame"
+    android:background="@drawable/login_background">
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -33,8 +33,9 @@
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
                     android:layout_marginTop="20dp"
-                    android:textColor="@color/text_color"
-                    android:textSize="@dimen/heading_size" />
+                    android:textColor="@color/text_grey"
+                    android:textSize="@dimen/heading_size"
+                    android:textAllCaps="false"/>
 
                 <TextView
                     android:id="@+id/employeePosition"
@@ -44,7 +45,7 @@
                     android:layout_marginBottom="20dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
-                    android:textColor="@color/text_color" />
+                    android:textColor="@color/text_grey" />
 
                 <Button
                     android:id="@+id/btnHomeEditProfile"
@@ -53,7 +54,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
                     android:layout_alignParentTop="true"
-                    android:background="@drawable/icon_pencil" />
+                    android:background="@drawable/icon_edit_orange" />
 
             </RelativeLayout>
 
@@ -177,7 +178,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentRight="true"
-                        android:text="View All >>" />
+                        android:text="View All >>"/>
 
                 </RelativeLayout>
 
@@ -202,48 +203,50 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/headerApproveLeave"
-                    android:visibility="gone">
+                    android:visibility="gone"
+                    android:layout_marginTop="2dp">
 
                     <LinearLayout
                         android:id="@+id/bottom_wrapper"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:background="#66ddff00"
-                        android:weightSum="1">
+                        android:weightSum="1"
+                        style="@style/SwipeViewStyle">
 
                         <ImageView
                             android:id="@+id/sickLeaveAttachment"
                             android:layout_width="70dp"
                             android:layout_height="match_parent"
-                            android:background="@drawable/view_blue"
+                            android:background="@drawable/view_orange"
                             android:paddingLeft="20dp"
                             android:paddingRight="20dp"
-                            android:src="@drawable/icon_attachment" />
+                            android:src="@drawable/icon_attachment"/>
 
                         <ImageView
                             android:id="@+id/rejectView"
                             android:layout_width="70dp"
                             android:layout_height="match_parent"
-                            android:background="@drawable/view_red"
+                            android:background="@drawable/view_orange"
                             android:paddingLeft="20dp"
                             android:paddingRight="20dp"
-                            android:src="@drawable/icon_reject" />
+                            android:src="@drawable/icon_reject"/>
 
                         <ImageView
                             android:id="@+id/approveView"
                             android:layout_width="70dp"
                             android:layout_height="match_parent"
-                            android:background="@drawable/view_green"
+                            android:background="@drawable/view_orange"
                             android:paddingLeft="20dp"
                             android:paddingRight="20dp"
-                            android:src="@drawable/icon_approve" />
+                            android:src="@drawable/icon_approve"/>
 
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        style="@style/SwipeViewStyle">
 
                         <TextView
                             android:id="@+id/approveLeaveName"

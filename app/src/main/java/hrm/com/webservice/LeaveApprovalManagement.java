@@ -36,6 +36,7 @@ public class LeaveApprovalManagement {
     private LeaveTypeWS leaveTypeWS;
     private YearlyEntitlementWS yearlyEntitlementWS;
     private LeaveApplicationEmailNotificationWS sendEmailWS;
+    private CalendarEventWS calendarEventWS;
 
     public LeaveApprovalManagement(String username, String password, int leaveTransactionId, Users user) {
         this.leaveTransactionId = leaveTransactionId;
@@ -46,6 +47,7 @@ public class LeaveApprovalManagement {
         leaveTypeWS = new LeaveTypeWS(username, password);
         yearlyEntitlementWS = new YearlyEntitlementWS(username, password);
         sendEmailWS = new LeaveApplicationEmailNotificationWS(username, password);
+        calendarEventWS = new CalendarEventWS(username, password);
     }
 
     public void doRejectLeaveRequest(final String rejectReason, final TaskListener listener) {
@@ -211,7 +213,7 @@ public class LeaveApprovalManagement {
                 leaveTransactionPersist = leaveTransactionWS.processAppliedLeaveOfEmployee(selectedLeaveRequest);
                 leaveApplicationFlowWS.UpdateLeaveBalancesOnceApprovedTask(isApproved, leaveTransactionPersist);
 
-                //TODO: Calendar service========
+                calendarEventWS.createEventForApprovedLeave(selectedLeaveRequest);
 
             } else {
                 if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 1) {

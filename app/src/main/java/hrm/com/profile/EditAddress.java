@@ -148,11 +148,6 @@ public class EditAddress extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(Address address) {
-            super.onPostExecute(address);
-        }
-
-        @Override
         protected Address doInBackground(String... params) {
             return addressWS.update(toUpdateAddress);
         }

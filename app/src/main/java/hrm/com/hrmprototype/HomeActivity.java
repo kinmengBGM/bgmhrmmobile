@@ -1,5 +1,7 @@
 package hrm.com.hrmprototype;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
@@ -46,23 +48,31 @@ public class HomeActivity extends ActionBarActivity {
     private String password;
     private Employee activeEmployee;
     private Users activeUser;
-    //private List<Address> existingAddressList;
     private List<String> userRoles;
     boolean hasHomeAccess = false, hasProfileAccess = false, hasApplyLeaveAccess = false, hasLeaveHistoryAccess= false, hasUpcomingLeaveAccess = false, hasLeaveApprovalAccess = false;
 
-    // Declare Variables
+    // Drawer Variables
     DrawerLayout mDrawerLayout;
     ListView mDrawerList;
     ActionBarDrawerToggle mDrawerToggle;
     DrawerItemCustomAdapter mMenuAdapter;
     List<DrawerItem> drawerItems;
-    private CharSequence mDrawerTitle;
     private CharSequence mTitle;
 
     private Fragment currentFrag = null;
     private Stack<Fragment> fragmentStack;
 
     private RoleWS roleWS;
+/*
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_home, menu);
+        return true;
+    }
+*/
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,11 +99,8 @@ public class HomeActivity extends ActionBarActivity {
 
         // Pass string arrays to MenuListAdapter
         mMenuAdapter = new DrawerItemCustomAdapter(HomeActivity.this, drawerItems);
-
-        // Set the MenuListAdapter to the ListView
         mDrawerList.setAdapter(mMenuAdapter);
         mDrawerList.setBackgroundResource(R.drawable.drawer_background);
-        // Capture listview menu item click
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         // Enable ActionBar app icon to behave as action to toggle nav drawer
@@ -141,6 +148,9 @@ public class HomeActivity extends ActionBarActivity {
         }else if(item.getItemId() == android.R.id.home && mDrawerLayout.getDrawerLockMode(mDrawerList) == DrawerLayout.LOCK_MODE_LOCKED_CLOSED){
             onBackPressed();
         }
+        else if(item.getItemId() == R.id.action_logout)
+            showExitDialog();
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -324,8 +334,28 @@ public class HomeActivity extends ActionBarActivity {
             ft.show(fragmentStack.lastElement());
             ft.commit();
         } else {
-            super.onBackPressed();
+            showExitDialog();
         }
+    }
+
+    public void showExitDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Add the buttons
+        builder.setTitle("Confirm Exit");
+        builder.setMessage("Are you sure you want to log out?");
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                finish();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     public void updateDrawerItems(){
@@ -345,18 +375,18 @@ public class HomeActivity extends ActionBarActivity {
                 hasLeaveApprovalAccess = true;
         }
         if(hasHomeAccess)
-            drawerItems.add(new ListItem(R.drawable.icon_home, Access.HOME.toString()));
+            drawerItems.add(new ListItem(R.drawable.icon_drawer_home, Access.HOME.toString()));
         if(hasProfileAccess)
-            drawerItems.add(new ListItem(R.drawable.icon_profile, Access.PROFILE.toString()));
+            drawerItems.add(new ListItem(R.drawable.icon_drawer_profile, Access.PROFILE.toString()));
         drawerItems.add(new Header("Leave Management"));
         if(hasApplyLeaveAccess)
-            drawerItems.add(new ListItem(R.drawable.icon_work, Access.APPLYLEAVE.toString()));
+            drawerItems.add(new ListItem(R.drawable.icon_drawer_apply, Access.APPLYLEAVE.toString()));
         if(hasLeaveHistoryAccess)
-            drawerItems.add(new ListItem(R.drawable.icon_work, Access.LEAVEHISTORY.toString()));
+            drawerItems.add(new ListItem(R.drawable.icon_drawer_history, Access.LEAVEHISTORY.toString()));
         if(hasUpcomingLeaveAccess)
-            drawerItems.add(new ListItem(R.drawable.icon_work, Access.UPCOMINGLEAVE.toString()));
+            drawerItems.add(new ListItem(R.drawable.icon_drawer_upcoming, Access.UPCOMINGLEAVE.toString()));
         if(hasLeaveApprovalAccess)
-            drawerItems.add(new ListItem(R.drawable.icon_work, Access.LEAVEAPPROVAL.toString()));
+            drawerItems.add(new ListItem(R.drawable.icon_drawer_approve, Access.LEAVEAPPROVAL.toString()));
 
         selectItem(0);
         mMenuAdapter.notifyDataSetChanged();
@@ -399,7 +429,6 @@ public class HomeActivity extends ActionBarActivity {
 
     public Employee getActiveEmployee(){ return activeEmployee; }
     public void setActiveEmployee(Employee activeEmployee){ this.activeEmployee = activeEmployee;}
-
 
 
 }

@@ -2,23 +2,22 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/swipeLayout"
-    style="@style/SwipeView">
+    android:id="@+id/swipeLayout">
     <!-- Bottom View Start-->
 
     <LinearLayout
-        android:background="#66ddff00"
         android:id="@+id/bottom_wrapper"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:weightSum="1">
+        android:weightSum="1"
+        style="@style/SwipeViewStyle">
 
         <ImageView
             android:id="@+id/sickLeaveAttachment"
             android:src="@drawable/icon_attachment"
             android:layout_width="70dp"
             android:layout_height="match_parent"
-            android:background="@drawable/view_blue"
+            android:background="@drawable/view_orange"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"/>
 
@@ -27,7 +26,7 @@
             android:src="@drawable/icon_reject"
             android:layout_width="70dp"
             android:layout_height="match_parent"
-            android:background="@drawable/view_red"
+            android:background="@drawable/view_orange"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"/>
 
@@ -36,7 +35,7 @@
             android:src="@drawable/icon_approve"
             android:layout_width="70dp"
             android:layout_height="match_parent"
-            android:background="@drawable/view_green"
+            android:background="@drawable/view_orange"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"/>
 
@@ -46,37 +45,36 @@
     <!-- Surface View Start -->
     <LinearLayout
         android:padding="10dp"
-        android:background="#ffffff"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        style="@style/SwipeViewStyle">
         <!--What you want to show in SurfaceView-->
         <TextView
             android:id="@+id/txtApproveEmployeeName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"/>
+            style="@style/SwipeViewTextStyle"/>
         <TextView
             android:id="@+id/txtApproveLeaveType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"/>
+            style="@style/SwipeViewTextStyle"/>
         <TextView
             android:id="@+id/txtApproveDates"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"/>
+        style="@style/SwipeViewTextStyle"/>
         <TextView
             android:id="@+id/txtApproveNoOfDays"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"/>
+            style="@style/SwipeViewTextStyle"/>
         <TextView
             android:id="@+id/txtApproveReason"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"/>
-
+        style="@style/SwipeViewTextStyle"/>
 
     </LinearLayout>
     <!-- Surface View End -->

@@ -9,7 +9,10 @@
         android:layout_height="wrap_content"
         android:background="@drawable/login_frame"
         android:clickable="true"
-        android:padding="@dimen/padding_login_frame"
+        android:paddingTop="@dimen/padding_login_frame_tb"
+        android:paddingBottom="@dimen/padding_login_frame_tb"
+        android:paddingLeft="@dimen/padding_login_frame_lr"
+        android:paddingRight="@dimen/padding_login_frame_lr"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin_login_frame_tb"
@@ -17,12 +20,11 @@
         android:layout_marginLeft="@dimen/margin_login_frame_lr"
         android:layout_marginRight="@dimen/margin_login_frame_lr">
 
-        <ImageView android:layout_width="250dp"
-            android:layout_height="250dp"
-            android:src="@drawable/login_picture"
+        <ImageView android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/logo_beans"
             android:scaleType="fitCenter"
             android:layout_above="@+id/username"
-            android:layout_marginBottom="30dp"
             android:layout_centerHorizontal="true" />
 
         <EditText
@@ -31,32 +33,30 @@
             android:inputType="textPersonName"
             android:id="@+id/username"
             android:background="@drawable/login_user"
-            android:paddingLeft="@dimen/padding_textbox"
-            android:paddingRight="@dimen/padding_textbox_icon"
             android:ems="5"
             android:hint="username"
             android:layout_alignBaseline="@+id/password"
             android:layout_alignBottom="@+id/password"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            style="@style/MyEditText_login"/>
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
-            android:ems="5"
             android:id="@+id/password"
+            android:background="@drawable/login_password"
+            android:ems="5"
             android:hint="password"
             android:layout_marginTop="@dimen/margin_form_space"
             android:layout_marginBottom="@dimen/margin_form_space"
-            android:paddingLeft="@dimen/padding_textbox"
-            android:paddingRight="@dimen/padding_textbox_icon"
-            android:background="@drawable/login_password"
             android:layout_alignBaseline="@+id/button"
             android:layout_alignBottom="@+id/button"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            style="@style/MyEditText_login"/>
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/button"
             android:layout_gravity="center_horizontal"
@@ -64,7 +64,7 @@
             android:layout_marginBottom="@dimen/margin_form_space"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:text="login"/>
+            android:text="Login"/>
     </RelativeLayout>
 
 </RelativeLayout>

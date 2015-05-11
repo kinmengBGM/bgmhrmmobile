@@ -2,11 +2,14 @@ package hrm.com.profile;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -56,6 +59,12 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        inflater.inflate(R.menu.menu_home, menu);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         setHasOptionsMenu(true);
@@ -76,6 +85,7 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
         this.username = ((HomeActivity) getActivity()).getUsername();
         this.password = ((HomeActivity) getActivity()).getPassword();
         this.employee = ((HomeActivity) getActivity()).getActiveEmployee();
+        setHasOptionsMenu(true);
 
         addressWS = new AddressWS(username, password);
 
@@ -186,6 +196,14 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
     }
 
     private class PopulateAddressTask extends AsyncTask<String, Void, List<Address>> {
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog.setMessage("Loading addresses...");
+            dialog.show();
+        }
 
         @Override
         protected void onPostExecute(List<Address> result) {
@@ -203,6 +221,7 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
                 lView.setVisibility(View.GONE);
                 layoutAddressInfo.setVisibility(View.VISIBLE);
             }
+            dialog.dismiss();
         }
 
         @Override

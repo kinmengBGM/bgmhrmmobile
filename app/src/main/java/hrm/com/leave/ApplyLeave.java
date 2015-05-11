@@ -12,6 +12,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -111,14 +113,10 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
     private LeaveTransactionWS leaveTransactionWS;
     private LeaveApplicationEmailNotificationWS leaveApplicationEmailWS;
 
-    public static ApplyLeave newInstance() {
-        return new ApplyLeave();
-    }
-
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        inflater.inflate(R.menu.menu_home, menu);
     }
 
     @Override
@@ -129,6 +127,7 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
 
         ((HomeActivity) getActivity()).enableNavigationDrawer(true);
         ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Apply Leave");
+        setHasOptionsMenu(true);
 
         String username = ((HomeActivity) getActivity()).getUsername();
         String password = ((HomeActivity) getActivity()).getPassword();
@@ -683,8 +682,8 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
             super.onPostExecute(result);
 
             yearlyEntitlementList = result;
-            ArrayAdapter<YearlyEntitlement> spinnerAdapter = new ArrayAdapter<YearlyEntitlement>(getActivity().getApplicationContext(), android.R.layout.simple_spinner_item, yearlyEntitlementList);
-            spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            ArrayAdapter<YearlyEntitlement> spinnerAdapter = new ArrayAdapter<YearlyEntitlement>(getActivity().getApplicationContext(), R.layout.item_spinner, yearlyEntitlementList);
+            spinnerAdapter.setDropDownViewResource(R.layout.item_spinner);
             editLeaveType.setAdapter(spinnerAdapter);
             spinnerAdapter.notifyDataSetChanged();
         }

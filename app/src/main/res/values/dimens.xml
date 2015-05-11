@@ -11,8 +11,9 @@
 
     <dimen name="padding_form">15dp</dimen>
 
-    <dimen name="padding_login_frame">25dp</dimen>
-    <dimen name="margin_login_frame_tb">60dp</dimen>
+    <dimen name="padding_login_frame_tb">25dp</dimen>
+    <dimen name="padding_login_frame_lr">45dp</dimen>
+    <dimen name="margin_login_frame_tb">80dp</dimen>
     <dimen name="margin_login_frame_lr">25dp</dimen>
     <dimen name="margin_content_frame">20dp</dimen>
     <dimen name="margin_form_space">60dp</dimen>

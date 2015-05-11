@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import hrm.com.custom.rest.CustomRestTemplate;
+import hrm.com.hrmprototype.App;
+import hrm.com.hrmprototype.R;
 import hrm.com.model.LeaveTransaction;
 
 /**
@@ -28,7 +30,7 @@ public class LeaveApplicationFlowWS {
     }
 
     public List<LeaveTransaction> getPendingLeaveRequestsByRoleOfUser(){
-        String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationFlow/getPendingLeaveRequestsByRoleOfUser?username={empUsername}";
+        String url = App.getContext().getResources().getString(R.string.host_address) + "/protected/leaveApplicationFlow/getPendingLeaveRequestsByRoleOfUser?username={empUsername}";
         HttpEntity<String> request = new HttpEntity<String>(customRT.getHeaders());
 
         ResponseEntity<LeaveTransaction[]> leaveArray = restTemplate.exchange(url, HttpMethod.GET, request, LeaveTransaction[].class, username);
@@ -40,9 +42,9 @@ public class LeaveApplicationFlowWS {
     public Boolean UpdateLeaveBalancesOnceApprovedTask(Boolean isApproved, LeaveTransaction leaveTransactionPersist){
         String url;
         if (isApproved)
-            url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationFlow/updateLeaveBalancesOnceApproved";
+            url = App.getContext().getResources().getString(R.string.host_address) + "/protected/leaveApplicationFlow/updateLeaveBalancesOnceApproved";
         else
-            url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationFlow/updateLeaveBalancesOnceRejected";
+            url = App.getContext().getResources().getString(R.string.host_address) + "/protected/leaveApplicationFlow/updateLeaveBalancesOnceRejected";
 
 
         HttpEntity request = new HttpEntity(leaveTransactionPersist, customRT.getHeaders());

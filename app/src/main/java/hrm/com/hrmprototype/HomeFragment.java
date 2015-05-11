@@ -2,11 +2,14 @@ package hrm.com.hrmprototype;
 
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -57,12 +60,20 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
     private LeaveApplicationFlowWS leaveApplicationFlowWS;
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        inflater.inflate(R.menu.menu_home, menu);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
 
         ((HomeActivity)getActivity()).enableNavigationDrawer(true);
         ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Home");
+
+        setHasOptionsMenu(true);
 
         username = ((HomeActivity) getActivity()).getUsername();
         password = ((HomeActivity) getActivity()).getPassword();
@@ -72,7 +83,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
 
         leaveTransactionWS = new LeaveTransactionWS(username, password);
         leaveApplicationFlowWS = new LeaveApplicationFlowWS(username, password);
-
 
         initUiValues(rootView);
 
@@ -190,16 +200,26 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
     }
 
     private class PopulateUpcomingLeaveTask extends AsyncTask<String, Void, List<LeaveTransaction>> {
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
         @Override
         protected void onPostExecute(List<LeaveTransaction> result) {
             super.onPostExecute(result);
             updateUpcomingLeaveUI(result);
+            dialog.dismiss();
         }
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
             return leaveTransactionWS.getAllFutureLeavesAppliedByEmployee(userId);
+        }
+
+        @Override
+        protected void onPreExecute(){
+            super.onPreExecute();
+
+            dialog.setMessage("Loading upcoming leaves...");
+            dialog.show();
         }
     }
 
@@ -229,15 +249,19 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
             rejectView.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v) {
+                    final ProgressDialog dialog = new ProgressDialog(getActivity());
                     rej = new RejectLeaveDialog(new RejectLeaveListener() {
                         @Override
                         public void onRejectLeave(String reason) {
+                            dialog.setMessage("Rejecting leave application...");
+                            dialog.show();
                             LeaveApprovalManagement leaveApprovalManagement =
                                     new LeaveApprovalManagement(username, password, first.getId(), user);
                             leaveApprovalManagement.doRejectLeaveRequest(reason, new TaskListener() {
                                 @Override
                                 public void onTaskCompleted() {
                                     rej.dismiss();
+                                    dialog.dismiss();
                                     Toast.makeText(getActivity().getApplicationContext(), R.string.info_rejectleave, Toast.LENGTH_SHORT).show();
                                     PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
                                     repopulate.execute();
@@ -252,11 +276,15 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
             approveView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    final ProgressDialog dialog = new ProgressDialog(getActivity());
+                    dialog.setMessage("Approving leave application...");
+                    dialog.show();
                     LeaveApprovalManagement leaveApprovalManagement =
                             new LeaveApprovalManagement(username, password, first.getId(), user);
                     leaveApprovalManagement.doApproveLeaveRequest(new TaskListener() {
                         @Override
                         public void onTaskCompleted() {
+                            dialog.dismiss();
                             Toast.makeText(getActivity().getApplicationContext(), R.string.info_approveleave, Toast.LENGTH_SHORT).show();
                             PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
                             repopulate.execute();
@@ -279,25 +307,28 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
 
     private class PopulateApproveLeaveTaskList extends AsyncTask<String, Void, List<LeaveTransaction>> {
 
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
+
         @Override
         protected void onPostExecute(List<LeaveTransaction> result) {
             super.onPostExecute(result);
             updateApproveLeaveUI(result);
+            dialog.dismiss();
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
+            dialog.setMessage("Loading leaves to be approved...");
+            dialog.show();
         }
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return getApproveLeavesTaskList();
-        }
-
-        public List<LeaveTransaction> getApproveLeavesTaskList() {
             return leaveApplicationFlowWS.getPendingLeaveRequestsByRoleOfUser();
         }
+
     }
 }
 

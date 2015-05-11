@@ -1,7 +1,5 @@
 package hrm.com.webservice;
 
-import android.system.ErrnoException;
-
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +7,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import hrm.com.custom.rest.CustomRestTemplate;
+import hrm.com.hrmprototype.App;
+import hrm.com.hrmprototype.R;
 import hrm.com.model.Employee;
 import hrm.com.model.Users;
 
@@ -19,7 +19,7 @@ public class Login {
     RestTemplate restTemplate;
     HttpEntity<String> request;
 
-    Users user;;
+    Users user;
     Employee employee;
 
     CustomRestTemplate customRT;
@@ -35,7 +35,7 @@ public class Login {
 
     }
 
-    public void doLogin() throws HttpClientErrorException, ErrnoException{
+    public void doLogin() throws HttpClientErrorException{
         user = getUser();
         employee = getEmployee(user.getId());
     }
@@ -49,7 +49,7 @@ public class Login {
     }
 
     public Users getUser(){
-        String YOUR_URL = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/users/findUsersByUsername?username={YOUR_USERNAME}";
+        String YOUR_URL = App.getContext().getResources().getString(R.string.host_address) + "/protected/users/findUsersByUsername?username={YOUR_USERNAME}";
 
         ResponseEntity<Users[]> response = restTemplate.exchange(YOUR_URL, HttpMethod.GET, request, Users[].class, username);
         Users[] user = response.getBody();
@@ -61,7 +61,7 @@ public class Login {
 
     public Employee getEmployee(int userId) {
         // The connection URL
-        String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/employee/findByUserId?userId={id}";
+        String url = App.getContext().getResources().getString(R.string.host_address) + "/protected/employee/findByUserId?userId={id}";
 
         ResponseEntity<Employee> response = restTemplate.exchange(url, HttpMethod.GET, request, Employee.class, userId);
         Employee activeEmployee = response.getBody();

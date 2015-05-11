@@ -25,9 +25,8 @@
                 android:id="@+id/editLeaveType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="@dimen/margin_textbox_bottom"/>
-
+                android:layout_marginBottom="@dimen/margin_textbox_bottom"
+                android:spinnerMode="dropdown"/>
 
             <TextView
                 android:id="@+id/entitlement"
@@ -153,6 +152,7 @@
                 android:id="@+id/editNoOfDays"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:inputType="number"
                 android:layout_marginBottom="@dimen/margin_textbox_bottom" />
 
             <TextView

@@ -17,6 +17,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Basic Info"
+                style="@style/ViewProfileTitleTextStyle"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RelativeLayout
@@ -48,6 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/layoutBasicInfo"
                 android:text="Contact Info"
+                style="@style/ViewProfileTitleTextStyle"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RelativeLayout
@@ -85,6 +87,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/layoutContactInfo"
                 android:text="Location Info"
+                style="@style/ViewProfileTitleTextStyle"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RelativeLayout
@@ -132,6 +135,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/layoutLocationInfo"
                 android:text="Work Info"
+                style="@style/ViewProfileTitleTextStyle"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <RelativeLayout

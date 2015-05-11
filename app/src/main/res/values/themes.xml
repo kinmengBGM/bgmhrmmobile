@@ -8,6 +8,7 @@
         <item name="android:activatedBackgroundIndicator">@drawable/drawer_list_selector</item>
 
         <item name="android:editTextStyle">@style/MyEditText</item>
+        <item name="android:buttonStyle">@style/ButtonStyle</item>
 
         <item name="android:spinnerStyle">@style/MySpinner</item>
         <!--Spinner drop down item-->
@@ -16,45 +17,64 @@
         <item name="android:spinnerItemStyle">@style/MySpinnerItemStyle</item>
 
         <item name="android:listViewStyle">@style/MyListViewStyle</item>
-        <item name="android:expandableListViewStyle">@style/MyListViewStyle</item>
+        <item name="android:expandableListViewStyle">@style/MyExpandableListViewStyle</item>
 
+<!--
         <item name="android:listViewWhiteStyle">@style/MySpinnerDropDownItemStyle</item>
+-->
 
         <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
         <item name="android:dialogTheme">@style/MyDialogStyle</item>
-        <item name="android:buttonStyle">@style/ButtonStyle</item>
 
+<!--
         <item name="android:textAppearanceListItem">@style/TextAppearanceListView</item>
+-->
         <!--Support library compatibility-->
         <item name="actionBarStyle">@style/MyActionBar</item>
+
 
     </style>
 
     <style name="ButtonStyle" parent="Widget.AppCompat.Button">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColor">@color/buttonText</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:typeface">monospace</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:adjustViewBounds">true</item>
         <item name="android:background">@drawable/button_orange</item>
     </style>
 
+    <style name="editProfileButtonStyle">
+        <item name="android:background">@color/buttonBackground</item>
+        <item name="android:textSize">10dp</item>
+        <item name="android:minHeight">1dp</item>
+        <item name="android:gravity">left</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/buttonText</item>
+    </style>
+
     <style name="MyActionBar" parent="Widget.AppCompat.Light.ActionBar.Solid.Inverse">
-        <item name="android:background">@color/ab_bg_orange</item>
-        <item name="android:backgroundStacked">@color/ab_stacked</item>
+        <item name="android:background">@color/base_blue</item>
         <item name="android:titleTextStyle">@style/MyActionBarTextAppearance</item>
 
         <!--Support library compatibility-->
-        <item name="background">@color/ab_bg_orange</item>
-        <item name="backgroundStacked">@color/ab_stacked</item>
+        <item name="background">@color/base_blue</item>
         <item name="titleTextStyle">@style/MyActionBarTextAppearance</item>
 
     </style>
 
     <style name="MyActionBarTextAppearance" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
         <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
+    <style name="ViewProfileTitleTextStyle">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/base_blue</item>
+        <item name="android:textAllCaps">true</item>
     </style>
 
     <style name="HomeHeader">
@@ -62,7 +82,7 @@
     </style>
 
     <style name="HomeHeaderText">
-        <item name="android:textColor">@color/text_homeHeader</item>
+        <item name="android:textColor">@color/base_grey</item>
         <item name="android:textSize">17sp</item>
         <item name="android:padding">@dimen/padding_home_header</item>
     </style>
@@ -77,7 +97,7 @@
 
 
     <style name="MyEditText" parent="Widget.AppCompat.EditText">
-        <item name="android:background">@drawable/edittext</item>
+        <item name="android:background">@drawable/form_input</item>
         <item name="android:textSize">13sp</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:textColorHint">@color/text_edittext</item>
@@ -86,8 +106,17 @@
         <item name="android:paddingRight">@dimen/padding_textbox</item>
     </style>
 
+    <style name="MyEditText_login" parent="Widget.AppCompat.EditText">
+        <item name="android:textSize">13sp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:textColorHint">#ffffff</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:paddingLeft">@dimen/padding_textbox</item>
+        <item name="android:paddingRight">@dimen/padding_textbox_icon</item>
+    </style>
+
     <style name="MySpinner" parent="Widget.AppCompat.Spinner">
-        <item name="android:background">@drawable/edittext</item>
+        <item name="android:background">@drawable/form_spinner</item>
         <item name="android:spinnerMode">dropdown</item>
         <!--
         <item name="android:popupBackground">@drawable/spinner</item>
@@ -104,19 +133,7 @@
     <style name="MySpinnerDropDownItemStyle">
         <item name="android:background">@drawable/spinner</item>
         <item name="android:textAppearance">@style/MyEditText</item>
-        <item name="android:paddingLeft">@dimen/padding_textbox</item>
-        <item name="android:paddingRight">@dimen/padding_textbox</item>
-    </style>
-
-    <style name="MyPagerTabStrip">
-        <item name="android:background">@drawable/viewpager</item>
-    </style>
-
-
-    <style name="MyPagerTabStripText">
-        <item name="android:textSize">15dp</item>
-        <item name="android:textColor">#ffffff</item>
-        <item name="android:textAllCaps">false</item>
+        <item name="android:padding">@dimen/padding_textbox</item>
     </style>
 
     <style name="MyDatePickerStyle" parent="android:Widget.DatePicker">
@@ -135,38 +152,25 @@
         <item name="android:background">@color/background_color</item>
         <item name="android:textColor">@color/text_color</item>
         <item name="android:layout_marginBottom">@dimen/margin_content_frame</item>
-
     </style>
 
-    <style name="editProfileButtonStyle">
-        <item name="android:background">@color/buttonBackground</item>
-        <item name="android:textSize">10dp</item>
-        <item name="android:minHeight">1dp</item>
-        <item name="android:gravity">left</item>
-        <item name="android:padding">5dp</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="android:textColor">@color/buttonText</item>
+    <style name="SwipeViewStyle">
+        <item name="android:background">@color/background_color</item>
+    </style>
+
+    <style name="SwipeViewTextStyle">
+        <item name="android:textColor">@color/text_grey</item>
+    </style>
+
+
+    <style name="MyExpandableListViewStyle">
+        <item name="android:childDivider">@color/dark_grey</item>
+        <item name="android:divider">@color/base_grey</item>
+        <item name="android:dividerHeight">1dp</item>
     </style>
 
     <style name="MyListViewStyle">
-        <item name="android:textAppearanceListItem">@style/TextAppearanceListView</item>
-        <item name="android:childDivider">#ffffff</item>
-        <item name="android:divider">@color/base_grey</item>
-        <item name="android:dividerHeight">1dp</item>
-        <item name="android:textColor">#000000</item>
-    </style>
+        <item name="android:divider">@color/dark_grey</item>
 
-    <style name="TextAppearanceListView" parent="TextAppearance.AppCompat">
-        <item name="android:textSize">12sp</item>
-        <item name="android:textColor">#000000</item>
-
-    </style>
-
-    <style name="SwipeView">
-        <item name="android:textAppearance">@style/swipeTextStyle</item>
-    </style>
-
-    <style name="swipeTextStyle" parent="TextAppearance.AppCompat">
-        <item name="android:textColor">#000000</item>
     </style>
 </resources>

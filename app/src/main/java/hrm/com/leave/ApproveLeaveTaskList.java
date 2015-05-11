@@ -1,10 +1,13 @@
 package hrm.com.leave;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -51,9 +54,9 @@ public class ApproveLeaveTaskList extends Fragment {
     private LeaveApplicationFlowWS leaveApplicationFlowWS;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        inflater.inflate(R.menu.menu_home, menu);
     }
 
     @Override
@@ -63,6 +66,7 @@ public class ApproveLeaveTaskList extends Fragment {
 
         ((HomeActivity) getActivity()).enableNavigationDrawer(true);
         ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Leave Approval");
+        setHasOptionsMenu(true);
 
         this.username = ((HomeActivity) getActivity()).getUsername();
         this.password = ((HomeActivity) getActivity()).getPassword();
@@ -94,16 +98,20 @@ public class ApproveLeaveTaskList extends Fragment {
                 new ApproveLeaveListener() {
                     @Override
                     public void onRejectSelected(int leaveId) {
+                        final ProgressDialog dialog = new ProgressDialog(getActivity());
                         leaveTransactionId = leaveId;
                         rej = new RejectLeaveDialog(new RejectLeaveListener() {
                             @Override
                             public void onRejectLeave(String reason) {
+                                dialog.setMessage("Rejecting leave application...");
+                                dialog.show();
                                 LeaveApprovalManagement leaveApprovalManagement =
                                         new LeaveApprovalManagement(username, password, leaveTransactionId, getUser());
                                 leaveApprovalManagement.doRejectLeaveRequest(reason, new TaskListener() {
                                     @Override
                                     public void onTaskCompleted() {
                                         rej.dismiss();
+                                        dialog.dismiss();
                                         Toast.makeText(getActivity().getApplicationContext(), R.string.info_rejectleave, Toast.LENGTH_SHORT).show();
                                         PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
                                         repopulate.execute();
@@ -117,11 +125,15 @@ public class ApproveLeaveTaskList extends Fragment {
                     @Override
                     public void onApproveSelected(int leaveId) {
                         leaveTransactionId = leaveId;
+                        final ProgressDialog dialog = new ProgressDialog(getActivity());
+                        dialog.setMessage("Approving leave application...");
+                        dialog.show();
                         LeaveApprovalManagement leaveApprovalManagement =
                                 new LeaveApprovalManagement(username, password, leaveTransactionId, getUser());
                         leaveApprovalManagement.doApproveLeaveRequest(new TaskListener() {
                             @Override
                             public void onTaskCompleted() {
+                                dialog.dismiss();
                                 Toast.makeText(getActivity().getApplicationContext(), R.string.info_approveleave, Toast.LENGTH_SHORT).show();
                                 PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
                                 repopulate.execute();
@@ -142,6 +154,7 @@ public class ApproveLeaveTaskList extends Fragment {
     }
 
     private class PopulateApproveLeaveTaskList extends AsyncTask<String, Void, List<LeaveTransaction>> {
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
         @Override
         protected void onPostExecute(List<LeaveTransaction> result) {
@@ -157,11 +170,15 @@ public class ApproveLeaveTaskList extends Fragment {
                 noApproveLeave.setVisibility(View.VISIBLE);
                 lView.setVisibility(View.GONE);
             }
+            dialog.dismiss();
         }
+
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            dialog.setMessage("Loading leaves to be approved...");
+            dialog.show();
         }
 
         @Override

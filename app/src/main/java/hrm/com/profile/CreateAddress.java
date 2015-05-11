@@ -3,7 +3,6 @@ package hrm.com.profile;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,13 +13,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +22,7 @@ import hrm.com.hrmprototype.R;
 import hrm.com.model.Address;
 import hrm.com.model.Employee;
 import hrm.com.model.Users;
+import hrm.com.webservice.EmployeeWS;
 import hrm.com.wrapper.UpdateEmployeeWrapper;
 
 public class CreateAddress extends Fragment {
@@ -42,6 +35,8 @@ public class CreateAddress extends Fragment {
     private Users user;
 
     private List<Address> existingAddressList = new ArrayList<Address>();
+
+    private EmployeeWS employeeWS;
 
     private Spinner addressType;
     private EditText line1;
@@ -75,6 +70,8 @@ public class CreateAddress extends Fragment {
         this.employee = ((HomeActivity) getActivity()).getActiveEmployee();
         this.user = ((HomeActivity) getActivity()).getActiveUser();
         newAddress = new Address();
+
+        employeeWS = new EmployeeWS(username, password);
         initLayout(rootView);
 
         return rootView;
@@ -159,25 +156,9 @@ public class CreateAddress extends Fragment {
 
         @Override
         protected Employee doInBackground(String... params) {
-            String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/employee/updateEmployee";
-            RestTemplate restTemplate = new RestTemplate();
-
-            HttpHeaders headers = new HttpHeaders();
-            String plainCreds = username + ":" + password;
-            String base64EncodedCredentials = Base64.encodeToString(plainCreds.getBytes(), Base64.NO_WRAP);
-            headers.add("Authorization", "Basic " + base64EncodedCredentials);
-
-            // Add the String message converter
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
-            HttpEntity request = new HttpEntity(toUpdateEmployee, headers);
-            ResponseEntity<Employee> response = restTemplate.exchange(url, HttpMethod.POST, request, Employee.class);
-            return response.getBody();
+            return employeeWS.updateEmployee(toUpdateEmployee);
         }
     }
-
-
-
 
 }
 

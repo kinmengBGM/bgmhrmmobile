@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import hrm.com.custom.rest.CustomRestTemplate;
+import hrm.com.hrmprototype.App;
+import hrm.com.hrmprototype.R;
 
 /**
  * Created by Beans on 4/30/2015.
@@ -26,7 +28,7 @@ public class RoleWS {
     }
 
     public List<String> getRolesByUsername(){
-        String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/role/findRoleNamesByUsername?username={username}";
+        String url = App.getContext().getResources().getString(R.string.host_address) + "/protected/role/findRoleNamesByUsername?username={username}";
         HttpEntity<String> request = new HttpEntity<String>(customRT.getHeaders());
 
         ResponseEntity<String[]> roleArray = restTemplate.exchange(url, HttpMethod.GET, request, String[].class, username);

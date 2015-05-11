@@ -4,9 +4,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-
 import hrm.com.custom.rest.CustomRestTemplate;
+import hrm.com.hrmprototype.App;
+import hrm.com.hrmprototype.R;
 import hrm.com.model.LeaveTransaction;
 
 /**
@@ -25,7 +25,7 @@ public class LeaveApplicationEmailNotificationWS {
     }
 
     public Void sendingIntimationEmail(LeaveTransaction leavePersistBean){
-        String url = "http://10.0.2.2:8080/restWS-0.0.1-SNAPSHOT/protected/leaveApplicationEmailNotification/sendingIntimationEmail";
+        String url = App.getContext().getResources().getString(R.string.host_address) + "/protected/leaveApplicationEmailNotification/sendingIntimationEmail";
         HttpEntity request = new HttpEntity(leavePersistBean, customRT.getHeaders());
         restTemplate.exchange(url, HttpMethod.POST, request, Void.class);
 
