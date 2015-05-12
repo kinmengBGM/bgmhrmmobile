@@ -145,7 +145,7 @@
                 android:id="@+id/numberOfDays"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Number of Days: "
+                android:text="*Number of Days: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <EditText
@@ -168,6 +168,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/margin_textbox_bottom"
                 android:inputType="textMultiLine"
+                android:background="@drawable/form_multiline"
                 android:lines="4"/>
 
 

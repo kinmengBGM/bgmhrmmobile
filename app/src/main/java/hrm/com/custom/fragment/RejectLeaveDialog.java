@@ -30,6 +30,7 @@ public class RejectLeaveDialog extends DialogFragment implements View.OnClickLis
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.dialog_reject_leave, container);
+        getDialog().setTitle("Reject leave application?");
 
         rejectReason = (EditText) view.findViewById(R.id.editRejectReason);
         Button cancel = (Button) view.findViewById(R.id.btnRejectLeaveCancel);

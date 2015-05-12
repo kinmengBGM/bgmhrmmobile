@@ -5,40 +5,23 @@
     <color name="dark_grey">#bfbfbf</color>
     <color name="base_blue">#255b73</color>
 
-    <color name="text_grey">#7b7b7b</color>
-
     <color name="orange_press">#c84d00</color>
     <color name="blue_press">#388cb2</color>
 
+    <color name="text_grey">#7b7b7b</color>
+
     <color name="text_homeHeader">#ffffff</color>
+    <color name="text_drawertext">#ffffff</color>
+    <color name="text_edittext">#80878e</color>
 
     <color name="background_color">@color/base_grey</color>
 
     <color name="buttonText">@color/base_grey</color>
     <color name="buttonBackground">@color/base_orange</color>
 
-    <color name="frame_color">#c7c9be</color>
-    <color name="text_color">#828478</color>
     <color name="ab_bg_orange">#b13f01</color>
     <color name="ab_stacked">#ffffff</color>
-    <color name="tab_selected">#dc4e00</color>
-    <color name="tab_unselected">#f4f5ed</color>
-
-    <color name="text_drawertext">#ffffff</color>
-
-    <color name="text_edittext">#80878e</color>
-
-    <color name="spinner_active">#c7c9be</color>
-    <color name="spinner_inactive">#c7c9be</color>
-
-    <color name="red">#f80000</color>
-    <color name="red_press">#990000</color>
-
-    <color name="yellow">#f8e334</color>
-    <color name="yellow_press">#d6b917</color>
 
 
-    <color name="green">#40e138</color>
-    <color name="green_press">#2b9900</color>
 
 </resources>

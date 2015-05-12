@@ -19,16 +19,6 @@
         <item name="android:listViewStyle">@style/MyListViewStyle</item>
         <item name="android:expandableListViewStyle">@style/MyExpandableListViewStyle</item>
 
-<!--
-        <item name="android:listViewWhiteStyle">@style/MySpinnerDropDownItemStyle</item>
--->
-
-        <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
-        <item name="android:dialogTheme">@style/MyDialogStyle</item>
-
-<!--
-        <item name="android:textAppearanceListItem">@style/TextAppearanceListView</item>
--->
         <!--Support library compatibility-->
         <item name="actionBarStyle">@style/MyActionBar</item>
 
@@ -95,7 +85,6 @@
         <item name="android:layout_margin">0dp</item>
     </style>
 
-
     <style name="MyEditText" parent="Widget.AppCompat.EditText">
         <item name="android:background">@drawable/form_input</item>
         <item name="android:textSize">13sp</item>
@@ -108,6 +97,7 @@
 
     <style name="MyEditText_login" parent="Widget.AppCompat.EditText">
         <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:textColorHint">#ffffff</item>
         <item name="android:textColor">#ffffff</item>
@@ -118,10 +108,6 @@
     <style name="MySpinner" parent="Widget.AppCompat.Spinner">
         <item name="android:background">@drawable/form_spinner</item>
         <item name="android:spinnerMode">dropdown</item>
-        <!--
-        <item name="android:popupBackground">@drawable/spinner</item>
-        <item name="android:paddingLeft">@dimen/padding_textbox</item>
-        <item name="android:paddingRight">@dimen/padding_textbox</item>-->
     </style>
 
     <style name="MySpinnerItemStyle">
@@ -136,21 +122,9 @@
         <item name="android:padding">@dimen/padding_textbox</item>
     </style>
 
-    <style name="MyDatePickerStyle" parent="android:Widget.DatePicker">
-        <item name="android:headerBackground">@color/ab_bg_orange</item>
-        <item name="android:textColor">@color/ab_bg_orange</item>
-        <item name="android:background">@color/ab_bg_orange</item>
-    </style>
-
-    <style name="MyDialogStyle" parent="Theme.AppCompat.Dialog"><!--
-        <item name="android:background">#ffffff</item>
-        <item name="android:textColor">#ffffff</item>
-        <item name="android:headerBackground">#ffffff</item>-->
-    </style>
-
     <style name="ContainerStyle">
         <item name="android:background">@color/background_color</item>
-        <item name="android:textColor">@color/text_color</item>
+        <item name="android:textColor">@color/text_grey</item>
         <item name="android:layout_marginBottom">@dimen/margin_content_frame</item>
     </style>
 
@@ -161,7 +135,6 @@
     <style name="SwipeViewTextStyle">
         <item name="android:textColor">@color/text_grey</item>
     </style>
-
 
     <style name="MyExpandableListViewStyle">
         <item name="android:childDivider">@color/dark_grey</item>

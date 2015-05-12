@@ -24,7 +24,7 @@
                 android:id="@+id/employeeNo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Employee Number: "
+                android:text="*Employee Number: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <EditText
@@ -37,7 +37,7 @@
                 android:id="@+id/position"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Position: "
+                android:text="*Position: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <EditText
@@ -51,7 +51,7 @@
                 android:id="@+id/grade"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Grade: "
+                android:text="*Grade: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <Spinner
@@ -66,7 +66,7 @@
                 android:id="@+id/employeeType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Employee Type: "
+                android:text="*Employee Type: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <Spinner
@@ -80,7 +80,7 @@
                 android:id="@+id/department"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Department: "
+                android:text="*Department: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <Spinner
@@ -96,7 +96,6 @@
                 android:layout_height="wrap_content"
                 android:text="Join Date: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
-
 
             <RelativeLayout
                 android:id="@+id/rowJoinDate"

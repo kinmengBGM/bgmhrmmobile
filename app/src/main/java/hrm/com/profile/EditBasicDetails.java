@@ -16,6 +16,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Date;
 
 import hrm.com.hrmprototype.HomeActivity;
@@ -86,13 +88,15 @@ public class EditBasicDetails extends Fragment implements AdapterView.OnItemSele
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Get item selected and deal with it
         switch (item.getItemId()) {
             case R.id.action_save:
-                //called when the up affordance/carat in actionbar is pressed
+                if(StringUtils.isBlank(editName.getText())) {
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_field_validation, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 UpdateProfileTask update = new UpdateProfileTask();
                 update.execute();
-                Toast.makeText(getActivity().getApplicationContext(),"Profile Updated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplicationContext(),R.string.info_profileUpdated, Toast.LENGTH_SHORT).show();
                 getActivity().onBackPressed();
                 return true;
         }

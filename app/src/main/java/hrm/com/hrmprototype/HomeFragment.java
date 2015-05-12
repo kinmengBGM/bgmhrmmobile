@@ -3,9 +3,13 @@ package hrm.com.hrmprototype;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,6 +24,12 @@ import android.widget.Toast;
 
 import com.daimajia.swipe.SwipeLayout;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import hrm.com.custom.fragment.RejectLeaveDialog;
@@ -39,6 +49,9 @@ import hrm.com.webservice.LeaveTransactionWS;
  */
 @SuppressLint("ValidFragment")
 public class HomeFragment extends Fragment implements View.OnClickListener{
+
+    private static final int REQUEST_VIEW_PDF = 78;
+    private String pdfFilePath;
 
     private Employee employee;
     private Users user;
@@ -223,6 +236,48 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         }
     }
 
+    public boolean isPdf(String sickLeaveAttachmentName) {
+        String name = sickLeaveAttachmentName.substring(sickLeaveAttachmentName.length() - 3);
+        if (name.equals("pdf")) {
+            return true;
+        } else
+            return false;
+    }
+
+
+    private File createPdfFile(String sickLeaveAttachmentName, byte[] bytes) throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = sickLeaveAttachmentName + timeStamp;
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS);
+        File pdfFile = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".pdf",         /* suffix */
+                storageDir      /* directory */
+        );
+        BufferedOutputStream bos = null;
+        FileOutputStream os = null;
+        pdfFilePath = pdfFile.getAbsolutePath();
+        try {
+            os = new FileOutputStream(pdfFile);
+            bos = new BufferedOutputStream(os);
+            bos.write(bytes);
+        } finally {
+            if (bos != null) {
+                try {
+                    //flush and close the BufferedOutputStream
+                    bos.flush();
+                    bos.close();
+                    os.flush();
+                    os.close();
+                } catch (Exception e) {
+                }
+            }
+        }
+        return pdfFile;
+    }
+
     public void updateApproveLeaveUI(List<LeaveTransaction> result){
 
         if (result.size() > 0) {
@@ -240,8 +295,26 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
             sickLeaveAttachment.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    SickLeaveDialog sickLeaveDialog = new SickLeaveDialog(first.getSickLeaveAttachment());
-                    sickLeaveDialog.show(getActivity().getSupportFragmentManager(), "AttachmentDialog");
+                    if (isPdf(first.getSickLeaveAttachmentName())) {
+                        try {
+                            File pdfFile = createPdfFile(first.getSickLeaveAttachmentName(), first.getSickLeaveAttachment());
+                            Intent target = new Intent(Intent.ACTION_VIEW);
+                            target.setDataAndType(Uri.fromFile(pdfFile), "application/pdf");
+                            target.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+                            Intent intent = Intent.createChooser(target, "Open File");
+                            try {
+                                startActivityForResult(Intent.createChooser(intent, "View PDF File"), REQUEST_VIEW_PDF);
+                            } catch (ActivityNotFoundException e) {
+                                Toast.makeText(getActivity().getApplicationContext(), R.string.error_no_pdf_viewer, Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (IOException e) {
+                            Toast.makeText(getActivity().getApplicationContext(), R.string.error_sickleaveattachment_filecreation, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        SickLeaveDialog sickLeaveDialog = new SickLeaveDialog(first.getSickLeaveAttachment());
+                        sickLeaveDialog.show(getActivity().getSupportFragmentManager(), "AttachmentDialog");
+                    }
                 }
             });
 
@@ -302,6 +375,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         } else {
             approveNoDataLayout.setVisibility(View.VISIBLE);
             approveGotDataLayout.setVisibility(View.GONE);
+        }
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_VIEW_PDF) {
+            File pdf = new File(pdfFilePath);
+            pdf.delete();
         }
     }
 

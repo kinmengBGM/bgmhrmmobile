@@ -2,8 +2,12 @@ package hrm.com.leave;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,7 +18,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import hrm.com.custom.adapter.ApproveLeaveAdapter;
@@ -37,25 +47,29 @@ import hrm.com.webservice.LeaveApprovalManagement;
 
 @SuppressLint("ValidFragment")
 public class ApproveLeaveTaskList extends Fragment {
+
+    private static final int REQUEST_VIEW_PDF = 78;
+
     private ApproveLeaveAdapter adpt;
     private List<LeaveTransaction> approveLeaveList = new ArrayList<LeaveTransaction>();
 
     private TextView noApproveLeave;
+    private ListView lView;
 
     private String username;
     private String password;
     private Users user;
 
-    private ListView lView;
+    private String pdfFilePath;
 
-    int leaveTransactionId;
+    private int leaveTransactionId;
     private RejectLeaveDialog rej;
 
     private LeaveApplicationFlowWS leaveApplicationFlowWS;
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        ((HomeActivity) getActivity()).enableNavigationDrawer(true);
         inflater.inflate(R.menu.menu_home, menu);
     }
 
@@ -91,16 +105,60 @@ public class ApproveLeaveTaskList extends Fragment {
         return user;
     }
 
+    public boolean isPdf(String sickLeaveAttachmentName) {
+        String name = sickLeaveAttachmentName.substring(sickLeaveAttachmentName.length() - 3);
+        if (name.equals("pdf")) {
+            return true;
+        } else
+            return false;
+    }
+
+    private File createPdfFile(String sickLeaveAttachmentName, byte[] bytes) throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = sickLeaveAttachmentName + timeStamp;
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS);
+        File pdfFile = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".pdf",         /* suffix */
+                storageDir      /* directory */
+        );
+        BufferedOutputStream bos = null;
+        FileOutputStream os = null;
+        pdfFilePath = pdfFile.getAbsolutePath();
+        try {
+            os = new FileOutputStream(pdfFile);
+            bos = new BufferedOutputStream(os);
+            bos.write(bytes);
+        } finally {
+            if (bos != null) {
+                try {
+                    //flush and close the BufferedOutputStream
+                    bos.flush();
+                    bos.close();
+                    os.flush();
+                    os.close();
+                } catch (Exception e) {
+                }
+            }
+        }
+        return pdfFile;
+    }
+
     public void setApproveLeaveList() {
 
         adpt = new ApproveLeaveAdapter(getActivity().getApplicationContext(), R.layout.row_approve_leave, approveLeaveList,
-
                 new ApproveLeaveListener() {
+
+                    //Select reject option
                     @Override
                     public void onRejectSelected(int leaveId) {
                         final ProgressDialog dialog = new ProgressDialog(getActivity());
                         leaveTransactionId = leaveId;
                         rej = new RejectLeaveDialog(new RejectLeaveListener() {
+
+                            //Confirm reject
                             @Override
                             public void onRejectLeave(String reason) {
                                 dialog.setMessage("Rejecting leave application...");
@@ -145,12 +203,36 @@ public class ApproveLeaveTaskList extends Fragment {
                 new ViewSickLeaveAttachmentListener() {
                     @Override
                     public void onViewAttachment(LeaveTransaction attachment) {
-                        //TODO: Open pdf viewer
-                        SickLeaveDialog sickLeaveDialog = new SickLeaveDialog(attachment.getSickLeaveAttachment());
-                        sickLeaveDialog.show(getActivity().getSupportFragmentManager(), "AttachmentDialog");
+                        if (isPdf(attachment.getSickLeaveAttachmentName())) {
+                            try {
+                                File pdfFile = createPdfFile(attachment.getSickLeaveAttachmentName(), attachment.getSickLeaveAttachment());
+                                Intent target = new Intent(Intent.ACTION_VIEW);
+                                target.setDataAndType(Uri.fromFile(pdfFile), "application/pdf");
+                                target.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+                                Intent intent = Intent.createChooser(target, "Open File");
+                                try {
+                                    startActivityForResult(Intent.createChooser(intent, "View PDF File"), REQUEST_VIEW_PDF);
+                                } catch (ActivityNotFoundException e) {
+                                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_no_pdf_viewer, Toast.LENGTH_SHORT).show();
+                                }
+                            } catch (IOException e) {
+                                Toast.makeText(getActivity().getApplicationContext(), R.string.error_sickleaveattachment_filecreation, Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            SickLeaveDialog sickLeaveDialog = new SickLeaveDialog(attachment.getSickLeaveAttachment());
+                            sickLeaveDialog.show(getActivity().getSupportFragmentManager(), "AttachmentDialog");
+                        }
                     }
                 });
         lView.setAdapter(adpt);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_VIEW_PDF) {
+            File pdf = new File(pdfFilePath);
+            pdf.delete();
+        }
     }
 
     private class PopulateApproveLeaveTaskList extends AsyncTask<String, Void, List<LeaveTransaction>> {

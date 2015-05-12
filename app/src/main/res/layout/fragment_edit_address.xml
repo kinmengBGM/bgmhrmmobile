@@ -38,7 +38,7 @@
                 android:id="@+id/line1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Line 1: "
+                android:text="*Line 1: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <EditText
@@ -116,7 +116,7 @@
                 android:id="@+id/country"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Country: "
+                android:text="*Country: "
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <EditText

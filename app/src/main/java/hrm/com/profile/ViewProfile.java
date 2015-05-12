@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
 
     private ProfileFragmentChangeListener listener;
 
-    private TextView employeeName, workPhone, workEmail, position, department;
+    private TextView employeeName, workPhone, workEmail, position, joinDate;
 
     private AddressAdapter adpt;
     private int addressId;
@@ -105,7 +106,7 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
         workPhone = (TextView) rootView.findViewById(R.id.txtProfileWorkPhone);
         workEmail = (TextView) rootView.findViewById(R.id.txtProfileWorkEmail);
         position = (TextView) rootView.findViewById(R.id.txtProfilePosition);
-        department = (TextView) rootView.findViewById(R.id.txtProfileDepartment);
+        joinDate = (TextView) rootView.findViewById(R.id.txtJoinDate);
 
         lView = (ListView) rootView.findViewById(R.id.listViewAddress);
         adpt = new AddressAdapter(new ArrayList<Address>(), rootView.getContext());
@@ -126,11 +127,16 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
 
     public void initUiValues(){
 
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy");
+
         employeeName.setText(employee.getName());
         workPhone.setText(employee.getOfficePhone());
         workEmail.setText(employee.getWorkEmailAddress());
         position.setText(employee.getPosition());
-        department.setText(employee.getDepartment().getDescription());
+        if(employee.getJoinDate() != null)
+            joinDate.setText("Joined since " + dateFormat.format(employee.getJoinDate()).toString());
+        else
+            joinDate.setVisibility(View.GONE);
     }
 
     @Override

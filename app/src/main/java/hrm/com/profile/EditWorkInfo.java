@@ -17,10 +17,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import hrm.com.custom.fragment.DatePickerFragment;
 import hrm.com.custom.listener.DatePickerListener;
@@ -136,21 +142,24 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
         ArrayAdapter adapter;
         int spinnerPosition;
 
-        value = employee.getEmployeeGrade().getDescription();
-        adapter = (ArrayAdapter) editGrade.getAdapter();
-        spinnerPosition = adapter.getPosition(value);
-        editGrade.setSelection(spinnerPosition);
-
-        value = employee.getDepartment().getDescription();
-        adapter = (ArrayAdapter) editDepartment.getAdapter();
-        spinnerPosition = adapter.getPosition(value);
-        editDepartment.setSelection(spinnerPosition);
-
-        value = employee.getEmployeeType().getDescription();
-        adapter = (ArrayAdapter) editEmployeeType.getAdapter();
-        spinnerPosition = adapter.getPosition(value);
-        editEmployeeType.setSelection(spinnerPosition);
-
+        if (employee.getEmployeeGrade() != null) {
+            value = employee.getEmployeeGrade().getDescription();
+            adapter = (ArrayAdapter) editGrade.getAdapter();
+            spinnerPosition = adapter.getPosition(value);
+            editGrade.setSelection(spinnerPosition);
+        }
+        if (employee.getDepartment() != null) {
+            value = employee.getDepartment().getDescription();
+            adapter = (ArrayAdapter) editDepartment.getAdapter();
+            spinnerPosition = adapter.getPosition(value);
+            editDepartment.setSelection(spinnerPosition);
+        }
+        if (employee.getEmployeeType() != null) {
+            value = employee.getEmployeeType().getDescription();
+            adapter = (ArrayAdapter) editEmployeeType.getAdapter();
+            spinnerPosition = adapter.getPosition(value);
+            editEmployeeType.setSelection(spinnerPosition);
+        }
         existingAddress = new ArrayList<Address>();
     }
 
@@ -158,11 +167,14 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_save:
+                if(StringUtils.isBlank(editEmployeeNo.getText()) || StringUtils.isBlank(editPosition.getText())) {
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_field_validation, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 UpdateProfileTask update = new UpdateProfileTask();
                 update.execute();
-                Toast.makeText(getActivity().getApplicationContext(), "Profile Updated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity().getApplicationContext(), R.string.info_profileUpdated, Toast.LENGTH_SHORT).show();
                 getActivity().onBackPressed();
-
                 return true;
         }
         return false;
@@ -197,6 +209,7 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
 
         private class UpdateProfileTask extends AsyncTask<String, Void, Employee> {
 
+
             private UpdateEmployeeWrapper updateEmployeeWrapper;
             private Employee toUpdateEmployee;
             private HashMap<Integer, Address> newAddressMap;
@@ -208,21 +221,28 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
                 toUpdateEmployee = new Employee();
                 toUpdateEmployee = employee;
 
+                DateFormat format = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+                Date joinDate = null, resDate = null;
+                try {
+                    if(StringUtils.isNotEmpty(editJoinDate.getText())) {
+                        joinDate = format.parse(editJoinDate.getText().toString());
+                        toUpdateEmployee.setJoinDate(joinDate);
+                    }
+                    if(StringUtils.isNotEmpty(editResDate.getText())) {
+                        resDate = format.parse(editResDate.getText().toString());
+                        toUpdateEmployee.setResignationDate(resDate);
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
                 toUpdateEmployee.setEmployeeNumber(editEmployeeNo.getText().toString());
                 toUpdateEmployee.setPosition(editPosition.getText().toString());
-
                 updateEmployeeWrapper = new UpdateEmployeeWrapper(toUpdateEmployee, grade, employeeType, department, null, existingAddress, newAddressMap);
             }
 
             @Override
-            protected void onPostExecute(Employee result) {
-                employee = result;
-            }
-
-
-            @Override
             protected Employee doInBackground(String... params) {
-
                 return employeeWS.updateEmployee(updateEmployeeWrapper);
             }
         }

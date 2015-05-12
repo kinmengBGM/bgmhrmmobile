@@ -1,5 +1,6 @@
 package hrm.com.leave;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -47,6 +48,7 @@ import hrm.com.custom.fragment.DatePickerFragment;
 import hrm.com.custom.fragment.SickLeaveAttachmentDialog;
 import hrm.com.custom.listener.DatePickerListener;
 import hrm.com.custom.listener.SickLeaveAttachmentListener;
+import hrm.com.custom.listener.TaskListener;
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.Employee;
@@ -89,10 +91,6 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
     private String timings;
     private LeaveTransaction leaveTransaction = new LeaveTransaction();
     private List<String> roleList;
-    private LeaveRuleBean leaveRuleBean;
-    LeaveFlowDecisionsTaken leaveFlowDecisions;
-    LeaveTransaction leavePersistBean;
-
 
     private List<YearlyEntitlement> yearlyEntitlementList;
 
@@ -231,16 +229,13 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
                 sickDialog.show(getActivity().getSupportFragmentManager(), "SickLeaveDialog");
                 break;
             case R.id.btnApplyLeave:
-
                 try {
                     setValues();
-                    if (applyLeave()) {
-                        Toast.makeText(getActivity().getApplicationContext(), R.string.info_applyleave, Toast.LENGTH_SHORT).show();
-                        ((HomeActivity) getActivity()).switchFragment("home");
-                    }
+                    applyLeave();
+
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    Toast.makeText(getActivity().getApplicationContext(), "Error processing leave application", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_applyleave, Toast.LENGTH_SHORT).show();
                 }
 
                 break;
@@ -370,7 +365,6 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
     }
 
     public void updateUiValues(int position) {
-
 
         if (yearlyEntitlementList.get(position).getLeaveType().getDescription().equals("Sick leave")) {
             txtAttachment.setVisibility(View.VISIBLE);
@@ -658,12 +652,19 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
             for (Role role : getUser().getUserRoles()) {
                 roleList.add(role.getRole().trim());
             }
-
-            GetLeaveRuleByRoleAndLeaveTypeTask getLeaveRuleByRoleAndLeaveTypeTask = new GetLeaveRuleByRoleAndLeaveTypeTask();
-            getLeaveRuleByRoleAndLeaveTypeTask.execute();
-
+            final ProgressDialog dialog = new ProgressDialog(getActivity());
+            dialog.setMessage("Submitting leave application...");
+            dialog.show();
+            ApplyLeaveTask applyLeaveTask = new ApplyLeaveTask(new TaskListener() {
+                @Override
+                public void onTaskCompleted() {
+                    dialog.dismiss();
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.info_applyleave, Toast.LENGTH_SHORT).show();
+                    ((HomeActivity) getActivity()).switchFragment("home");
+                }
+            });
+            applyLeaveTask.execute();
         }
-
         return true;
     }
 
@@ -745,88 +746,45 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
         }
     }
 
-    private class ProcessAppliedLeaveOfEmployeeTask extends AsyncTask<String, Void, LeaveTransaction> {
-
-        @Override
-        protected void onPostExecute(LeaveTransaction result) {
-            super.onPostExecute(result);
-            leavePersistBean = result;
-
-            SendIntimationEmailTask sendEmail = new SendIntimationEmailTask();
-            sendEmail.execute();
-
-        }
-
-        @Override
-        protected LeaveTransaction doInBackground(String... params) {
-            return leaveTransactionWS.processAppliedLeaveOfEmployee(leaveTransaction);
-        }
-
-    }
-
-    private class GetLeaveRuleByRoleAndLeaveTypeTask extends AsyncTask<String, Void, LeaveRuleBean> {
-
+    private class ApplyLeaveTask extends AsyncTask<String, Void, Boolean> {
         GetLeaveRuleByRoleAndLeaveTypeWrapper leaveRuleWrapper;
+        TaskListener mListener;
 
-        @Override
-        protected void onPostExecute(LeaveRuleBean result) {
-            super.onPostExecute(result);
-            leaveTransaction.setLeaveRuleBean(result);
-            leaveRuleBean = result;
-            SaveLeaveApprovalDecisionsTask saveLeaveApprovalDecisionsTask = new SaveLeaveApprovalDecisionsTask();
-            saveLeaveApprovalDecisionsTask.execute();
+        public ApplyLeaveTask(TaskListener mListener){
+            this.mListener = mListener;
         }
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+        public void onPostExecute(Boolean result){
+            super.onPostExecute(result);
+            mListener.onTaskCompleted();
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
             leaveRuleWrapper = new GetLeaveRuleByRoleAndLeaveTypeWrapper();
 
             leaveRuleWrapper.setLeaveType(leaveType);
             leaveRuleWrapper.setRoleType(roleList);
-        }
-
-        @Override
-        protected LeaveRuleBean doInBackground(String... params) {
-            return leaveTransactionWS.getLeaveRuleByRoleAndLeaveType(leaveRuleWrapper);
-
-        }
-
-    }
-
-    private class SendIntimationEmailTask extends AsyncTask<String, Void, Void> {
-
-        @Override
-        protected void onPostExecute(Void result) {
-            setSelectedYearlyEntitlement(0);
-            setLeaveType("");
-            setStartDate(null);
-            setEndDate(null);
-            setReason("");
-
-        }
-
-        @Override
-        protected Void doInBackground(String... params) {
-            return leaveApplicationEmailWS.sendingIntimationEmail(leavePersistBean);
-        }
-    }
-
-    private class SaveLeaveApprovalDecisionsTask extends AsyncTask<String, Void, LeaveFlowDecisionsTaken> {
-        @Override
-        protected void onPostExecute(LeaveFlowDecisionsTaken result) {
-            super.onPostExecute(result);
-            leaveFlowDecisions = result;
+            LeaveRuleBean leaveRuleBean = leaveTransactionWS.getLeaveRuleByRoleAndLeaveType(leaveRuleWrapper);
+            leaveTransaction.setLeaveRuleBean(leaveRuleBean);
+            LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionWS.saveLeaveApprovalDecisions();
             leaveTransaction.setDecisionsBean(leaveFlowDecisions);
-            leaveTransaction.setDecisionToBeTaken(leaveRuleBean.getApproverNameLevel1());
-            ProcessAppliedLeaveOfEmployeeTask process = new ProcessAppliedLeaveOfEmployeeTask();
-            process.execute();
+            try {
+                //LeaveApplication successful
+                leaveTransaction.setDecisionToBeTaken(leaveRuleBean.getApproverNameLevel1());
+                LeaveTransaction leavePersistBean = leaveTransactionWS.processAppliedLeaveOfEmployee(leaveTransaction);
+                leaveApplicationEmailWS.sendingIntimationEmail(leavePersistBean);
+                setSelectedYearlyEntitlement(0);
+                setLeaveType("");
+                setStartDate(null);
+                setEndDate(null);
+                setReason("");
 
-        }
-
-        @Override
-        protected LeaveFlowDecisionsTaken doInBackground(String... params) {
-            return leaveTransactionWS.saveLeaveApprovalDecisions();
+            }catch(Exception e){
+                return false;
+            }
+            return true;
         }
     }
 }

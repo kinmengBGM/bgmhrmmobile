@@ -15,6 +15,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.apache.commons.lang3.StringUtils;
+
 import hrm.com.hrmprototype.HomeActivity;
 import hrm.com.hrmprototype.R;
 import hrm.com.model.Address;
@@ -67,6 +69,10 @@ public class EditAddress extends Fragment {
         // Get item selected and deal with it
         switch (item.getItemId()) {
             case R.id.action_save:
+                if(StringUtils.isBlank(editLine1.getText()) || StringUtils.isBlank(editCountry.getText())) {
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_field_validation, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 UpdateAddressTask update = new UpdateAddressTask();
                 update.execute();
                 Toast.makeText(getActivity().getApplicationContext(), "Address Updated", Toast.LENGTH_SHORT).show();

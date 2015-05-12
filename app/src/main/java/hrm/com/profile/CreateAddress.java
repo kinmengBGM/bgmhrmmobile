@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,6 +118,10 @@ public class CreateAddress extends Fragment {
         // Get item selected and deal with it
         switch (item.getItemId()) {
             case R.id.action_save:
+                if(StringUtils.isBlank(line1.getText()) || StringUtils.isBlank(country.getText())) {
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_field_validation, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 addAddressToEmployee();
                 CreateAddressTask update = new CreateAddressTask();
                 update.execute();

@@ -24,6 +24,10 @@
     <string name="error_sickleaveattachment_mcNotFound">Please attach your Medical Certificate.</string>
     <string name="error_sickleaveattachment_filecreation">Error : Unable to create file.</string>
     <string name="error_parseLeaveHistory">Error : Unable to retrieve leave history.</string>
+    <string name="error_field_validation">Error : Please fill in the necessary information.</string>
+    <string name="error_applyleave">Error : Error processing leave application.</string>
+    <string name="error_no_pdf_viewer">Error : No application available to view this pdf file.</string>
+
 
     <!--Info Messages-->
     <string name="info_applyleave">Info : Leave Applied. You will be notified if it is approved or rejected.</string>
@@ -31,6 +35,7 @@
     <string name="info_sickleaveattachment_galleryupload">Info : File has been attached from gallery.</string>
     <string name="info_rejectleave">Leave has been rejected.</string>
     <string name="info_approveleave">Leave has been approved.</string>
+    <string name="info_profileUpdated">Profile updated.</string>
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>

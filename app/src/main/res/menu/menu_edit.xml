@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <item android:id="@+id/action_save"
-        android:icon="@drawable/ic_action_accept"
+        android:icon="@drawable/icon_accept"
         android:orderInCategory="9999"
         app:showAsAction="always"
         android:title="save"/>

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="@dimen/padding_form">
 
     <TextView
         android:layout_width="wrap_content"
@@ -14,26 +15,31 @@
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
         android:id="@+id/editRejectReason"
+        android:background="@drawable/form_multiline"
         android:lines="4"
         android:minLines="4"
         android:maxLines="4"
         android:scrollbars="vertical"
-        android:layout_below="@+id/txtRejectReason"/>
+        android:layout_below="@+id/txtRejectReason"
+        style = "@style/MyEditText"/>
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="Reject"
-        android:layout_alignParentRight="true"
+        android:id="@+id/btnRejectLeave"
+        android:layout_marginTop="@dimen/margin_textbox_bottom"
         android:layout_below="@+id/editRejectReason"
-        android:id="@+id/btnRejectLeave"/>
+        style= "@style/ButtonStyle" />
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="Cancel"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/editRejectReason"
-        android:id="@+id/btnRejectLeaveCancel" />
+        android:layout_marginTop="@dimen/margin_textbox_bottom"
+        android:layout_below="@+id/btnRejectLeave"
+        android:id="@+id/btnRejectLeaveCancel"
+        style= "@style/ButtonStyle" />
 
 </RelativeLayout>
