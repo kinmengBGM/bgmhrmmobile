@@ -61,7 +61,7 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((HomeActivity)getActivity()).enableNavigationDrawer(true);
+        ((HomeActivity) getActivity()).enableNavigationDrawer(true);
         inflater.inflate(R.menu.menu_home, menu);
     }
 
@@ -125,7 +125,7 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
 
     }
 
-    public void initUiValues(){
+    public void initUiValues() {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy");
 
@@ -133,7 +133,7 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
         workPhone.setText(employee.getOfficePhone());
         workEmail.setText(employee.getWorkEmailAddress());
         position.setText(employee.getPosition());
-        if(employee.getJoinDate() != null)
+        if (employee.getJoinDate() != null)
             joinDate.setText("Joined since " + dateFormat.format(employee.getJoinDate()).toString());
         else
             joinDate.setVisibility(View.GONE);
@@ -208,6 +208,7 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Loading addresses...");
+            dialog.setCancelable(false);
             dialog.show();
         }
 
@@ -215,15 +216,16 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
         protected void onPostExecute(List<Address> result) {
             super.onPostExecute(result);
 
-            if (result.size() > 0) {
+            if (result == null) {
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            } else if (result.size() > 0) {
                 lView.setVisibility(View.VISIBLE);
                 layoutAddressInfo.setVisibility(View.GONE);
 
                 adpt.setItemList(result);
                 adpt.notifyDataSetChanged();
                 setListViewHeightBasedOnChildren(lView);
-            }
-            else{
+            } else {
                 lView.setVisibility(View.GONE);
                 layoutAddressInfo.setVisibility(View.VISIBLE);
             }
@@ -232,7 +234,11 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
 
         @Override
         protected List<Address> doInBackground(String... params) {
-            return addressWS.findByEmployeeId(employee.getId());
+            try {
+                return addressWS.findByEmployeeId(employee.getId());
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 
@@ -241,9 +247,14 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
         @Override
         protected void onPostExecute(Address deletedAddress) {
             super.onPostExecute(deletedAddress);
-            Toast.makeText(getActivity().getApplicationContext(), "Address deleted", Toast.LENGTH_SHORT).show();
-            PopulateAddressTask repopulate = new PopulateAddressTask();
-            repopulate.execute();
+            if (deletedAddress != null) {
+                Toast.makeText(getActivity().getApplicationContext(), R.string.info_addressDeleted, Toast.LENGTH_SHORT).show();
+                PopulateAddressTask repopulate = new PopulateAddressTask();
+                repopulate.execute();
+            }
+            else{
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            }
         }
 
         @Override
@@ -253,10 +264,13 @@ public class ViewProfile extends Fragment implements AdapterView.OnItemClickList
 
         @Override
         protected Address doInBackground(String... params) {
-            return addressWS.delete(addressId);
+            try {
+                return addressWS.delete(addressId);
+            } catch (Exception e) {
+                return null;
+            }
         }
 
     }
-
 
 }

@@ -1,6 +1,7 @@
 package hrm.com.profile;
 
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -75,8 +76,6 @@ public class EditAddress extends Fragment {
                 }
                 UpdateAddressTask update = new UpdateAddressTask();
                 update.execute();
-                Toast.makeText(getActivity().getApplicationContext(), "Address Updated", Toast.LENGTH_SHORT).show();
-                getActivity().onBackPressed();
                 return true;
         }
         return false;
@@ -116,20 +115,37 @@ public class EditAddress extends Fragment {
     public void setToUpdateAddress(Address toUpdateAddress){this.toUpdateAddress=toUpdateAddress;}
 
     private class GetToUpdateAddressTask extends AsyncTask<String, Void, Address> {
-
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
         @Override
         protected void onPostExecute(Address result) {
-            //super.onPostExecute(result);
-            setToUpdateAddress(result);
-            initValues();
+            super.onPostExecute(result);
+            if(result != null) {
+                setToUpdateAddress(result);
+                initValues();
+            }
+            else
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
         }
 
         @Override
         protected Address doInBackground(String... params) {
-            return addressWS.findById(addressId);
+            try {
+                return addressWS.findById(addressId);
+            }catch (Exception e){
+                return null;
+            }
         }
 
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            dialog.setMessage("Loading address information...");
+            dialog.setCancelable(false);
+            dialog.show();
+        }
     }
 
     public void updateUiValues(){
@@ -146,16 +162,38 @@ public class EditAddress extends Fragment {
     }
 
     private class UpdateAddressTask extends AsyncTask<String, Void, Address>{
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
+            dialog.setMessage("Updating address information...");
+            dialog.setCancelable(false);
+            dialog.show();
             updateUiValues();
         }
 
         @Override
         protected Address doInBackground(String... params) {
-            return addressWS.update(toUpdateAddress);
+            try {
+                return addressWS.update(toUpdateAddress);
+            }catch(Exception e){
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Address address) {
+            super.onPostExecute(address);
+            if (address!= null){
+                Toast.makeText(getActivity().getApplicationContext(), "Address Updated", Toast.LENGTH_SHORT).show();
+                getActivity().onBackPressed();
+            }
+            else{
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            }
+            dialog.dismiss();
         }
     }
 

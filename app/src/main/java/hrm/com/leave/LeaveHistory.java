@@ -113,7 +113,10 @@ public class LeaveHistory extends Fragment {
         protected void onPostExecute(List<LeaveTransaction> result) {
             super.onPostExecute(result);
 
-            if(result.size() > 0) {
+            if (result == null){
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            }
+            else if(result.size() > 0) {
                 noLeave.setVisibility(View.GONE);
                 lView.setVisibility(View.VISIBLE);
                 try {
@@ -134,13 +137,17 @@ public class LeaveHistory extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Loading leave history...");
+            dialog.setCancelable(false);
             dialog.show();
         }
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return leaveTransactionWS.getAllLeavesAppliedByEmployee(userId);
-
+            try {
+                return leaveTransactionWS.getAllLeavesAppliedByEmployee(userId);
+            }catch (Exception e){
+                return null;
+            }
         }
     }
 

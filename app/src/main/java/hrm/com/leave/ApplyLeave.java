@@ -232,10 +232,11 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
                 try {
                     setValues();
                     applyLeave();
-
                 } catch (ParseException e) {
                     e.printStackTrace();
-                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_applyleave, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_dates_validation, Toast.LENGTH_SHORT).show();
+                } catch (NumberFormatException e){
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_numberofdays_validation, Toast.LENGTH_SHORT).show();
                 }
 
                 break;
@@ -479,7 +480,6 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
         return false;
     }
 
-
     private Double findAnnualYearlyEntitlement() {
         try {
             YearlyEntitlementFindAnnualTask findAnnualTask = new YearlyEntitlementFindAnnualTask();
@@ -490,7 +490,6 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
         }
         return yearlyEntitlement.getYearlyLeaveBalance();
     }
-
 
     public String getTimings() {
         return timings;
@@ -540,9 +539,9 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
         this.employee = employee;
     }
 
-    public void setValues() throws ParseException {
+    public void setValues() throws ParseException, NumberFormatException {
         if(StringUtils.isNotBlank(editNoOfDays.getText().toString()))
-            setNumberOfDays(Double.valueOf(editNoOfDays.getText().toString()));
+            setNumberOfDays(Double.parseDouble(editNoOfDays.getText().toString()));
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         Date date;
@@ -652,8 +651,10 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
             for (Role role : getUser().getUserRoles()) {
                 roleList.add(role.getRole().trim());
             }
-            final ProgressDialog dialog = new ProgressDialog(getActivity());
+            final ProgressDialog dialog;
+            dialog = new ProgressDialog(getActivity());
             dialog.setMessage("Submitting leave application...");
+            dialog.setCancelable(false);
             dialog.show();
             ApplyLeaveTask applyLeaveTask = new ApplyLeaveTask(new TaskListener() {
                 @Override
@@ -661,6 +662,11 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
                     dialog.dismiss();
                     Toast.makeText(getActivity().getApplicationContext(), R.string.info_applyleave, Toast.LENGTH_SHORT).show();
                     ((HomeActivity) getActivity()).switchFragment("home");
+                }
+                @Override
+                public void onTaskNotCompleted() {
+                    dialog.hide();
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_applyleave, Toast.LENGTH_SHORT).show();
                 }
             });
             applyLeaveTask.execute();
@@ -677,26 +683,37 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
     }
 
     private class PopulateYearlyEntitlementTask extends AsyncTask<String, Void, List<YearlyEntitlement>> {
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
         @Override
         protected void onPostExecute(List<YearlyEntitlement> result) {
             super.onPostExecute(result);
-
-            yearlyEntitlementList = result;
-            ArrayAdapter<YearlyEntitlement> spinnerAdapter = new ArrayAdapter<YearlyEntitlement>(getActivity().getApplicationContext(), R.layout.item_spinner, yearlyEntitlementList);
-            spinnerAdapter.setDropDownViewResource(R.layout.item_spinner);
-            editLeaveType.setAdapter(spinnerAdapter);
-            spinnerAdapter.notifyDataSetChanged();
+            if(result != null) {
+                yearlyEntitlementList = result;
+                ArrayAdapter<YearlyEntitlement> spinnerAdapter = new ArrayAdapter<YearlyEntitlement>(getActivity().getApplicationContext(), R.layout.item_spinner, yearlyEntitlementList);
+                spinnerAdapter.setDropDownViewResource(R.layout.item_spinner);
+                editLeaveType.setAdapter(spinnerAdapter);
+                spinnerAdapter.notifyDataSetChanged();
+            }else
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            dialog.setMessage("Loading employee leave entitlements...");
+            dialog.setCancelable(false);
+            dialog.show();
         }
 
         @Override
         protected List<YearlyEntitlement> doInBackground(String... params) {
-            return yearlyEntitlementWS.findYearlyEntitlementListByEmployee(employeeId);
+            try {
+                return yearlyEntitlementWS.findYearlyEntitlementListByEmployee(employeeId);
+            }catch(Exception e){
+                return null;
+            }
         }
     }
 
@@ -757,20 +774,23 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
         @Override
         public void onPostExecute(Boolean result){
             super.onPostExecute(result);
-            mListener.onTaskCompleted();
+            if(result)
+                mListener.onTaskCompleted();
+            else{
+                mListener.onTaskNotCompleted();
+            }
         }
 
         @Override
         protected Boolean doInBackground(String... params) {
-            leaveRuleWrapper = new GetLeaveRuleByRoleAndLeaveTypeWrapper();
-
-            leaveRuleWrapper.setLeaveType(leaveType);
-            leaveRuleWrapper.setRoleType(roleList);
-            LeaveRuleBean leaveRuleBean = leaveTransactionWS.getLeaveRuleByRoleAndLeaveType(leaveRuleWrapper);
-            leaveTransaction.setLeaveRuleBean(leaveRuleBean);
-            LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionWS.saveLeaveApprovalDecisions();
-            leaveTransaction.setDecisionsBean(leaveFlowDecisions);
             try {
+                leaveRuleWrapper = new GetLeaveRuleByRoleAndLeaveTypeWrapper();
+                leaveRuleWrapper.setLeaveType(leaveType);
+                leaveRuleWrapper.setRoleType(roleList);
+                LeaveRuleBean leaveRuleBean = leaveTransactionWS.getLeaveRuleByRoleAndLeaveType(leaveRuleWrapper);
+                leaveTransaction.setLeaveRuleBean(leaveRuleBean);
+                LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionWS.saveLeaveApprovalDecisions();
+                leaveTransaction.setDecisionsBean(leaveFlowDecisions);
                 //LeaveApplication successful
                 leaveTransaction.setDecisionToBeTaken(leaveRuleBean.getApproverNameLevel1());
                 LeaveTransaction leavePersistBean = leaveTransactionWS.processAppliedLeaveOfEmployee(leaveTransaction);
@@ -780,7 +800,6 @@ public class ApplyLeave extends Fragment implements AdapterView.OnItemSelectedLi
                 setStartDate(null);
                 setEndDate(null);
                 setReason("");
-
             }catch(Exception e){
                 return false;
             }

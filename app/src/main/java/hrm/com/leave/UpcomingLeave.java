@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +84,10 @@ public class UpcomingLeave extends Fragment {
         protected void onPostExecute(List<LeaveTransaction> result) {
             super.onPostExecute(result);
 
-            if (result.size() > 0) {
+            if (result == null){
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            }
+            else if (result.size() > 0) {
                 noLeave.setVisibility(View.GONE);
                 lView.setVisibility(View.VISIBLE);
                 setListAdapter(result);
@@ -99,12 +103,17 @@ public class UpcomingLeave extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Loading upcoming leaves...");
+            dialog.setCancelable(false);
             dialog.show();
         }
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return leaveTransactionWS.getAllFutureLeavesAppliedByEmployee(userId);
+            try {
+                return leaveTransactionWS.getAllFutureLeavesAppliedByEmployee(userId);
+            }catch (Exception e){
+                return null;
+            }
         }
 
     }

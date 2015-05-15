@@ -5,4 +5,5 @@ package hrm.com.custom.listener;
  */
 public interface TaskListener {
     public void onTaskCompleted();
+    public void onTaskNotCompleted();
 }

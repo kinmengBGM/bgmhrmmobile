@@ -55,6 +55,7 @@ public class MainActivity extends ActionBarActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Logging in...");
+            dialog.setCancelable(false);
             dialog.show();
         }
 

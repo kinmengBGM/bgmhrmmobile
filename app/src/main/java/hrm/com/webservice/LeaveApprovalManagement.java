@@ -58,6 +58,11 @@ public class LeaveApprovalManagement {
             public void onTaskCompleted() {
                 listener.onTaskCompleted();
             }
+
+            @Override
+            public void onTaskNotCompleted() {
+                listener.onTaskNotCompleted();
+            }
         });
         rejectTask.execute();
     }
@@ -68,6 +73,11 @@ public class LeaveApprovalManagement {
             @Override
             public void onTaskCompleted() {
                 listener.onTaskCompleted();
+            }
+
+            @Override
+            public void onTaskNotCompleted() {
+                listener.onTaskNotCompleted();
             }
         });
         approveTask.execute();
@@ -105,48 +115,48 @@ public class LeaveApprovalManagement {
         @Override
         protected void onPostExecute(Boolean results) {
             super.onPostExecute(results);
-            if (true)
+            if (results)
                 taskListener.onTaskCompleted();
+            else
+                taskListener.onTaskNotCompleted();
         }
 
         @Override
         protected Boolean doInBackground(String... params) {
-            selectedLeaveRequest = leaveTransactionWS.findById(leaveTransactionId);
-            LeaveRuleBean leaveRule = selectedLeaveRequest.getLeaveRuleBean();
-            leaveTransactionPersist = null;
-            //ApplLogger.getLogger().info(String.format("Leave Application is rejected by user %s with role : %s", getActorUsers().getUsername(),selectedLeaveRequest.getDecisionToBeTaken()));
-            Map<String, Integer> rulesMap = getMapByLeaveRules(leaveRule);
+            try {
+                selectedLeaveRequest = leaveTransactionWS.findById(leaveTransactionId);
+                LeaveRuleBean leaveRule = selectedLeaveRequest.getLeaveRuleBean();
+                leaveTransactionPersist = null;
+                Map<String, Integer> rulesMap = getMapByLeaveRules(leaveRule);
 
-            if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 1) {
-                selectedLeaveRequest.getDecisionsBean().setDecisionLevel1("NO");
-                selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel1(getUser().getUsername());
-                //ApplLogger.getLogger().info(String.format("Current Level is rejected by : %s ", getActorUsers().getUsername()));
-            } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 2) {
-                selectedLeaveRequest.getDecisionsBean().setDecisionLevel2("NO");
-                selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel2(getUser().getUsername());
-                //ApplLogger.getLogger().info(String.format("Current Level is rejected by : %s", getActorUsers().getUsername()));
-            } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 3) {
-                selectedLeaveRequest.getDecisionsBean().setDecisionLevel3("NO");
-                selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel3(getUser().getUsername());
-                //ApplLogger.getLogger().info(String.format("Current Level is rejected by : %s", getActorUsers().getUsername()));
-            } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 4) {
-                selectedLeaveRequest.getDecisionsBean().setDecisionLevel4("NO");
-                selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel4(getUser().getUsername());
-                //ApplLogger.getLogger().info(String.format("Current Level is rejected by : %s", getActorUsers().getUsername()));
-            } else {
-                selectedLeaveRequest.getDecisionsBean().setDecisionLevel5("NO");
-                selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel5(getUser().getUsername());
-                //ApplLogger.getLogger().info(String.format("Current Level is rejected by : %s", getActorUsers().getUsername()));
+                if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 1) {
+                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel1("NO");
+                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel1(getUser().getUsername());
+                } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 2) {
+                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel2("NO");
+                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel2(getUser().getUsername());
+                } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 3) {
+                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel3("NO");
+                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel3(getUser().getUsername());
+                } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 4) {
+                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel4("NO");
+                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel4(getUser().getUsername());
+                } else {
+                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel5("NO");
+                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel5(getUser().getUsername());
+                }
+                selectedLeaveRequest.setRejectReason(rejectReason);
+                // saving the decisions taken by the approvers on a list
+                LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionWS.saveLeaveApprovalDecisions(selectedLeaveRequest.getDecisionsBean());
+                selectedLeaveRequest.setDecisionsBean(leaveFlowDecisions);
+                selectedLeaveRequest.setLastModifiedBy(getUser().getUsername());
+
+                leaveTransactionPersist = leaveTransactionWS.processAppliedLeaveOfEmployee(selectedLeaveRequest);
+                leaveApplicationFlowWS.UpdateLeaveBalancesOnceApprovedTask(isApproved, leaveTransactionPersist);
+                sendEmailWS.sendingIntimationEmail(leaveTransactionPersist);
+            }catch(Exception e) {
+                return false;
             }
-            selectedLeaveRequest.setRejectReason(rejectReason);
-            // saving the decisions taken by the approvers on a list
-            LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionWS.saveLeaveApprovalDecisions(selectedLeaveRequest.getDecisionsBean());
-            selectedLeaveRequest.setDecisionsBean(leaveFlowDecisions);
-            selectedLeaveRequest.setLastModifiedBy(getUser().getUsername());
-
-            leaveTransactionPersist = leaveTransactionWS.processAppliedLeaveOfEmployee(selectedLeaveRequest);
-            leaveApplicationFlowWS.UpdateLeaveBalancesOnceApprovedTask(isApproved, leaveTransactionPersist);
-            sendEmailWS.sendingIntimationEmail(leaveTransactionPersist);
             return true;
         }
     }
@@ -160,96 +170,98 @@ public class LeaveApprovalManagement {
         }
 
         @Override
-        protected void onPostExecute(Boolean results) {
+        protected void onPostExecute(Boolean results){
             super.onPostExecute(results);
-            if (true)
+            if (results)
                 taskListener.onTaskCompleted();
+            else
+                taskListener.onTaskNotCompleted();
         }
 
         @Override
         protected Boolean doInBackground(String... params) {
-            selectedLeaveRequest = leaveTransactionWS.findById(leaveTransactionId);
-            LeaveRuleBean leaveRule = selectedLeaveRequest.getLeaveRuleBean();
-            leaveTransactionPersist = null;
+            try {
 
-            Map<String, Integer> rulesMap = getMapByLeaveRules(leaveRule);
-            int totalLevelsRequired = rulesMap.size();
+                selectedLeaveRequest = leaveTransactionWS.findById(leaveTransactionId);
+                LeaveRuleBean leaveRule = selectedLeaveRequest.getLeaveRuleBean();
+                leaveTransactionPersist = null;
 
-            Integer currentLevel = rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken());
-            if (currentLevel == totalLevelsRequired) {
-                if (totalLevelsRequired == 1) {
-                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel1("YES");
-                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel1(getUser().getUsername());
-                } else if (totalLevelsRequired == 2) {
-                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel2("YES");
-                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel2(getUser().getUsername());
-                } else if (totalLevelsRequired == 3) {
-                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel3("YES");
-                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel3(getUser().getUsername());
-                } else if (totalLevelsRequired == 4) {
-                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel4("YES");
-                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel4(getUser().getUsername());
+                Map<String, Integer> rulesMap = getMapByLeaveRules(leaveRule);
+                int totalLevelsRequired = rulesMap.size();
+
+                Integer currentLevel = rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken());
+                if (currentLevel == totalLevelsRequired) {
+                    if (totalLevelsRequired == 1) {
+                        selectedLeaveRequest.getDecisionsBean().setDecisionLevel1("YES");
+                        selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel1(getUser().getUsername());
+                    } else if (totalLevelsRequired == 2) {
+                        selectedLeaveRequest.getDecisionsBean().setDecisionLevel2("YES");
+                        selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel2(getUser().getUsername());
+                    } else if (totalLevelsRequired == 3) {
+                        selectedLeaveRequest.getDecisionsBean().setDecisionLevel3("YES");
+                        selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel3(getUser().getUsername());
+                    } else if (totalLevelsRequired == 4) {
+                        selectedLeaveRequest.getDecisionsBean().setDecisionLevel4("YES");
+                        selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel4(getUser().getUsername());
+                    } else {
+                        selectedLeaveRequest.getDecisionsBean().setDecisionLevel5("YES");
+                        selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel5(getUser().getUsername());
+                    }
+                    selectedLeaveRequest.setDecisionToBeTaken("NONE");
+                    // saving the decisions taken by the approvers on a list
+                    LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionWS.saveLeaveApprovalDecisions(selectedLeaveRequest.getDecisionsBean());
+                    selectedLeaveRequest.setDecisionsBean(leaveFlowDecisions);
+                    selectedLeaveRequest.setLastModifiedBy(getUser().getUsername());
+
+                    // Getting the latest yearly balance and do the operations on it.
+                    YearlyEntitlement entitlementBean = null;
+                    if (Leave.TIMEINLIEU.equalsName(selectedLeaveRequest.getLeaveType().getName())) {
+                        LeaveType leaveType = leaveTypeWS.findByEmployeeNameAndTypeId(Leave.ANNUAL.toString(), selectedLeaveRequest.getEmployee().getEmployeeType().getId());
+                        entitlementBean = yearlyEntitlementWS.findByEmployeeAndLeaveType(selectedLeaveRequest.getEmployee().getId(), leaveType.getId());
+                    } else
+                        entitlementBean = yearlyEntitlementWS.findByEmployeeAndLeaveType(selectedLeaveRequest.getEmployee().getId(), selectedLeaveRequest.getLeaveType().getId());
+
+                    if (entitlementBean != null)
+                        selectedLeaveRequest.setYearlyLeaveBalance(entitlementBean.getYearlyLeaveBalance());
+
+                    leaveTransactionPersist = leaveTransactionWS.processAppliedLeaveOfEmployee(selectedLeaveRequest);
+                    leaveApplicationFlowWS.UpdateLeaveBalancesOnceApprovedTask(isApproved, leaveTransactionPersist);
+
+                    calendarEventWS.createEventForApprovedLeave(selectedLeaveRequest);
+
                 } else {
-                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel5("YES");
-                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel5(getUser().getUsername());
+                    if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 1) {
+                        selectedLeaveRequest.getDecisionsBean().setDecisionLevel1("YES");
+                        selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel1(getUser().getUsername());
+                        selectedLeaveRequest.setDecisionToBeTaken(leaveRule.getApproverNameLevel2());
+                    } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 2) {
+                        selectedLeaveRequest.getDecisionsBean().setDecisionLevel2("YES");
+                        selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel2(getUser().getUsername());
+                        selectedLeaveRequest.setDecisionToBeTaken(leaveRule.getApproverNameLevel3());
+                    } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 3) {
+                        selectedLeaveRequest.getDecisionsBean().setDecisionLevel3("YES");
+                        selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel3(getUser().getUsername());
+                        selectedLeaveRequest.setDecisionToBeTaken(leaveRule.getApproverNameLevel3());
+                    } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 4) {
+                        selectedLeaveRequest.getDecisionsBean().setDecisionLevel4("YES");
+                        selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel4(getUser().getUsername());
+                        selectedLeaveRequest.setDecisionToBeTaken(leaveRule.getApproverNameLevel4());
+                    }
+                    // saving the decisions taken by the approvers on a list
+                    LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionWS.saveLeaveApprovalDecisions(selectedLeaveRequest.getDecisionsBean());
+                    selectedLeaveRequest.setDecisionsBean(leaveFlowDecisions);
+                    selectedLeaveRequest.setLastModifiedBy(getUser().getUsername());
+                    leaveTransactionPersist = leaveTransactionWS.processAppliedLeaveOfEmployee(selectedLeaveRequest);
+
                 }
-                selectedLeaveRequest.setDecisionToBeTaken("NONE");
-                // saving the decisions taken by the approvers on a list
-                LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionWS.saveLeaveApprovalDecisions(selectedLeaveRequest.getDecisionsBean());
-                selectedLeaveRequest.setDecisionsBean(leaveFlowDecisions);
-                selectedLeaveRequest.setLastModifiedBy(getUser().getUsername());
+                sendEmailWS.sendingIntimationEmail(leaveTransactionPersist);
 
-                // Getting the latest yearly balance and do the operations on it.
-                YearlyEntitlement entitlementBean = null;
-                if(Leave.TIMEINLIEU.equalsName(selectedLeaveRequest.getLeaveType().getName())){
-                    LeaveType leaveType = leaveTypeWS.findByEmployeeNameAndTypeId(Leave.ANNUAL.toString(), selectedLeaveRequest.getEmployee().getEmployeeType().getId());
-                    entitlementBean = yearlyEntitlementWS.findByEmployeeAndLeaveType(selectedLeaveRequest.getEmployee().getId(), leaveType.getId());
-                }else
-                    entitlementBean =	yearlyEntitlementWS.findByEmployeeAndLeaveType(selectedLeaveRequest.getEmployee().getId(), selectedLeaveRequest.getLeaveType().getId());
-
-                if(entitlementBean!=null)
-                    selectedLeaveRequest.setYearlyLeaveBalance(entitlementBean.getYearlyLeaveBalance());
-
-                leaveTransactionPersist = leaveTransactionWS.processAppliedLeaveOfEmployee(selectedLeaveRequest);
-                leaveApplicationFlowWS.UpdateLeaveBalancesOnceApprovedTask(isApproved, leaveTransactionPersist);
-
-                calendarEventWS.createEventForApprovedLeave(selectedLeaveRequest);
-
-            } else {
-                if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 1) {
-                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel1("YES");
-                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel1(getUser().getUsername());
-                    selectedLeaveRequest.setDecisionToBeTaken(leaveRule.getApproverNameLevel2());
-                    //ApplLogger.getLogger().info(String.format("Current Level is approved by : %s and case moved to next Level : %s", getActorUsers().getUsername(), leaveRule.getApproverNameLevel2()));
-                } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 2) {
-                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel2("YES");
-                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel2(getUser().getUsername());
-                    selectedLeaveRequest.setDecisionToBeTaken(leaveRule.getApproverNameLevel3());
-                    //ApplLogger.getLogger().info(String.format("Current Level is approved by : %s and case moved to next Level : %s", getActorUsers().getUsername(), leaveRule.getApproverNameLevel3()));
-                } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 3) {
-                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel3("YES");
-                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel3(getUser().getUsername());
-                    selectedLeaveRequest.setDecisionToBeTaken(leaveRule.getApproverNameLevel3());
-                    //ApplLogger.getLogger().info(String.format("Current Level is approved by : %s and case moved to next Level : %s", getActorUsers().getUsername(), leaveRule.getApproverNameLevel4()));
-                } else if (rulesMap.get(selectedLeaveRequest.getDecisionToBeTaken()) == 4) {
-                    selectedLeaveRequest.getDecisionsBean().setDecisionLevel4("YES");
-                    selectedLeaveRequest.getDecisionsBean().setDecisionUserLevel4(getUser().getUsername());
-                    selectedLeaveRequest.setDecisionToBeTaken(leaveRule.getApproverNameLevel4());
-                    //ApplLogger.getLogger().info(String.format("Current Level is approved by : %s and case moved to next Level : %s", getActorUsers().getUsername(), leaveRule.getApproverNameLevel5()));
+                Set<String> roleSet = new HashSet<String>();
+                for (Role role : getUser().getUserRoles()) {
+                    roleSet.add(role.getRole());
                 }
-                // saving the decisions taken by the approvers on a list
-                LeaveFlowDecisionsTaken leaveFlowDecisions = leaveTransactionWS.saveLeaveApprovalDecisions(selectedLeaveRequest.getDecisionsBean());
-                selectedLeaveRequest.setDecisionsBean(leaveFlowDecisions);
-                selectedLeaveRequest.setLastModifiedBy(getUser().getUsername());
-                leaveTransactionPersist =	leaveTransactionWS.processAppliedLeaveOfEmployee(selectedLeaveRequest);
-
-                //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Info : Leave is approved and case is moved to next level approval","Leave Approved"));
-            }
-            sendEmailWS.sendingIntimationEmail(leaveTransactionPersist);
-
-            Set<String> roleSet = new HashSet<String>();
-            for (Role role : getUser().getUserRoles()) {
-                roleSet.add(role.getRole());
+            }catch(Exception e) {
+                return false;
             }
 
             setInsertDeleted(true);

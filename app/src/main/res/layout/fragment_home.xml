@@ -172,7 +172,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentLeft="true"
-                        android:text="Leave Approval" />
+                        android:text="Pending Approval" />
 
                     <Button
                         android:id="@+id/btnViewAllApproveLeave"

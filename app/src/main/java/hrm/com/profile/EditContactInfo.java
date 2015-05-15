@@ -1,6 +1,7 @@
 package hrm.com.profile;
 
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -36,7 +37,7 @@ public class EditContactInfo extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        ((HomeActivity)getActivity()).enableNavigationDrawer(false);
+        ((HomeActivity) getActivity()).enableNavigationDrawer(false);
         inflater.inflate(R.menu.menu_edit, menu);
     }
 
@@ -46,17 +47,17 @@ public class EditContactInfo extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_edit_contact_info, container, false);
 
-        ((HomeActivity)getActivity()).enableNavigationDrawer(false);
-        ((HomeActivity)getActivity()).getSupportActionBar().setTitle("Edit Basic Info");
-        ((HomeActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        ((HomeActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
+        ((HomeActivity) getActivity()).enableNavigationDrawer(false);
+        ((HomeActivity) getActivity()).getSupportActionBar().setTitle("Edit Basic Info");
+        ((HomeActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((HomeActivity) getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
         setHasOptionsMenu(true);
 
 
-        employee = ((HomeActivity)getActivity()).getActiveEmployee();
-        String username = ((HomeActivity)getActivity()).getUsername();
-        String password = ((HomeActivity)getActivity()).getPassword();
-        user = ((HomeActivity)getActivity()).getActiveUser();
+        employee = ((HomeActivity) getActivity()).getActiveEmployee();
+        String username = ((HomeActivity) getActivity()).getUsername();
+        String password = ((HomeActivity) getActivity()).getPassword();
+        user = ((HomeActivity) getActivity()).getActiveUser();
 
         employeeWS = new EmployeeWS(username, password);
 
@@ -65,14 +66,15 @@ public class EditContactInfo extends Fragment {
 
         return rootView;
     }
-    private void initLayout(View rootView){
+
+    private void initLayout(View rootView) {
         editPersonalEmail = (EditText) rootView.findViewById(R.id.editPersonalEmail);
         editWorkEmail = (EditText) rootView.findViewById(R.id.editWorkEmail);
         editPersonalPhone = (EditText) rootView.findViewById(R.id.editPersonalPhone);
         editWorkPhone = (EditText) rootView.findViewById(R.id.editWorkPhone);
     }
 
-    private void initValues(){
+    private void initValues() {
         editPersonalEmail.setText(employee.getPersonalEmailAddress());
         editWorkEmail.setText(employee.getWorkEmailAddress());
         editPersonalPhone.setText(employee.getPersonalPhone());
@@ -86,8 +88,6 @@ public class EditContactInfo extends Fragment {
             case R.id.action_save:
                 UpdateProfileTask update = new UpdateProfileTask();
                 update.execute();
-                Toast.makeText(getActivity().getApplicationContext(), "Profile Updated", Toast.LENGTH_SHORT).show();
-                getActivity().onBackPressed();
                 return true;
         }
         return false;
@@ -96,16 +96,27 @@ public class EditContactInfo extends Fragment {
     private class UpdateProfileTask extends AsyncTask<String, Void, Employee> {
 
         private Employee toUpdateEmployee;
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
         @Override
-        protected void onPostExecute(Employee result){
+        protected void onPostExecute(Employee result) {
             super.onPostExecute(result);
-            employee = result;
+            if (result != null) {
+                employee = result;
+                Toast.makeText(getActivity().getApplicationContext(), "Profile Updated", Toast.LENGTH_SHORT).show();
+                getActivity().onBackPressed();
+            } else
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
         }
 
         @Override
-        protected void onPreExecute(){
+        protected void onPreExecute() {
             super.onPreExecute();
+
+            dialog.setMessage("Updating profile...");
+            dialog.setCancelable(false);
+            dialog.show();
             toUpdateEmployee = new Employee();
             toUpdateEmployee = employee;
 
@@ -121,7 +132,11 @@ public class EditContactInfo extends Fragment {
 
         @Override
         protected Employee doInBackground(String... params) {
-            return employeeWS.update(toUpdateEmployee);
+            try {
+                return employeeWS.update(toUpdateEmployee);
+            }catch(Exception e){
+                return null;
+            }
         }
     }
 

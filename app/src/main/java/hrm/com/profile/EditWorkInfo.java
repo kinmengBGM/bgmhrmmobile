@@ -1,6 +1,7 @@
 package hrm.com.profile;
 
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -40,7 +41,7 @@ import hrm.com.wrapper.UpdateEmployeeWrapper;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelectedListener,View.OnClickListener {
+public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
 
     private Employee employee;
 
@@ -167,14 +168,12 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_save:
-                if(StringUtils.isBlank(editEmployeeNo.getText()) || StringUtils.isBlank(editPosition.getText())) {
+                if (StringUtils.isBlank(editEmployeeNo.getText()) || StringUtils.isBlank(editPosition.getText())) {
                     Toast.makeText(getActivity().getApplicationContext(), R.string.error_field_validation, Toast.LENGTH_SHORT).show();
                     return true;
                 }
                 UpdateProfileTask update = new UpdateProfileTask();
                 update.execute();
-                Toast.makeText(getActivity().getApplicationContext(), R.string.info_profileUpdated, Toast.LENGTH_SHORT).show();
-                getActivity().onBackPressed();
                 return true;
         }
         return false;
@@ -203,48 +202,71 @@ public class EditWorkInfo extends Fragment implements AdapterView.OnItemSelected
                 });
 
                 dialog.show(getActivity().getSupportFragmentManager(), "MyDatePickerDialog");
-            break;
+                break;
         }
     }
 
-        private class UpdateProfileTask extends AsyncTask<String, Void, Employee> {
+    private class UpdateProfileTask extends AsyncTask<String, Void, Employee> {
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
+        private UpdateEmployeeWrapper updateEmployeeWrapper;
+        private Employee toUpdateEmployee;
+        private HashMap<Integer, Address> newAddressMap;
+        private boolean success;
 
-            private UpdateEmployeeWrapper updateEmployeeWrapper;
-            private Employee toUpdateEmployee;
-            private HashMap<Integer, Address> newAddressMap;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            newAddressMap = new HashMap<Integer, Address>();
+            toUpdateEmployee = new Employee();
+            toUpdateEmployee = employee;
 
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                newAddressMap = new HashMap<Integer, Address>();
-                toUpdateEmployee = new Employee();
-                toUpdateEmployee = employee;
+            dialog.setMessage("Updating profile...");
+            dialog.setCancelable(false);
+            dialog.show();
 
-                DateFormat format = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-                Date joinDate = null, resDate = null;
-                try {
-                    if(StringUtils.isNotEmpty(editJoinDate.getText())) {
-                        joinDate = format.parse(editJoinDate.getText().toString());
-                        toUpdateEmployee.setJoinDate(joinDate);
-                    }
-                    if(StringUtils.isNotEmpty(editResDate.getText())) {
-                        resDate = format.parse(editResDate.getText().toString());
-                        toUpdateEmployee.setResignationDate(resDate);
-                    }
-                } catch (ParseException e) {
-                    e.printStackTrace();
+            DateFormat format = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+            Date joinDate = null, resDate = null;
+            try {
+                if (StringUtils.isNotEmpty(editJoinDate.getText())) {
+                    joinDate = format.parse(editJoinDate.getText().toString());
+                    toUpdateEmployee.setJoinDate(joinDate);
                 }
-
-                toUpdateEmployee.setEmployeeNumber(editEmployeeNo.getText().toString());
-                toUpdateEmployee.setPosition(editPosition.getText().toString());
-                updateEmployeeWrapper = new UpdateEmployeeWrapper(toUpdateEmployee, grade, employeeType, department, null, existingAddress, newAddressMap);
+                if (StringUtils.isNotEmpty(editResDate.getText())) {
+                    resDate = format.parse(editResDate.getText().toString());
+                    toUpdateEmployee.setResignationDate(resDate);
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
 
-            @Override
-            protected Employee doInBackground(String... params) {
+            toUpdateEmployee.setEmployeeNumber(editEmployeeNo.getText().toString());
+            toUpdateEmployee.setPosition(editPosition.getText().toString());
+            updateEmployeeWrapper = new UpdateEmployeeWrapper(toUpdateEmployee, grade, employeeType, department, null, existingAddress, newAddressMap);
+        }
+
+        @Override
+        protected Employee doInBackground(String... params) {
+            try {
+                success = true;
                 return employeeWS.updateEmployee(updateEmployeeWrapper);
+            }catch(Exception e){
+                success = false;
+                return null;
             }
         }
+
+        @Override
+        protected void onPostExecute(Employee employee) {
+            super.onPostExecute(employee);
+            if(success){
+                Toast.makeText(getActivity().getApplicationContext(), R.string.info_profileUpdated, Toast.LENGTH_SHORT).show();
+                getActivity().onBackPressed();
+            }
+            else
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        }
     }
+}
 

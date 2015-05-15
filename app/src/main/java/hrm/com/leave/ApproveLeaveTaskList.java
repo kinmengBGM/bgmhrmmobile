@@ -162,6 +162,7 @@ public class ApproveLeaveTaskList extends Fragment {
                             @Override
                             public void onRejectLeave(String reason) {
                                 dialog.setMessage("Rejecting leave application...");
+                                dialog.setCancelable(false);
                                 dialog.show();
                                 LeaveApprovalManagement leaveApprovalManagement =
                                         new LeaveApprovalManagement(username, password, leaveTransactionId, getUser());
@@ -174,6 +175,13 @@ public class ApproveLeaveTaskList extends Fragment {
                                         PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
                                         repopulate.execute();
                                     }
+
+                                    @Override
+                                    public void onTaskNotCompleted() {
+                                        rej.dismiss();
+                                        dialog.dismiss();
+                                        Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+                                    }
                                 });
                             }
                         });
@@ -185,6 +193,7 @@ public class ApproveLeaveTaskList extends Fragment {
                         leaveTransactionId = leaveId;
                         final ProgressDialog dialog = new ProgressDialog(getActivity());
                         dialog.setMessage("Approving leave application...");
+                        dialog.setCancelable(false);
                         dialog.show();
                         LeaveApprovalManagement leaveApprovalManagement =
                                 new LeaveApprovalManagement(username, password, leaveTransactionId, getUser());
@@ -195,6 +204,12 @@ public class ApproveLeaveTaskList extends Fragment {
                                 Toast.makeText(getActivity().getApplicationContext(), R.string.info_approveleave, Toast.LENGTH_SHORT).show();
                                 PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
                                 repopulate.execute();
+                            }
+
+                            @Override
+                            public void onTaskNotCompleted() {
+                                dialog.dismiss();
+                                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -242,7 +257,10 @@ public class ApproveLeaveTaskList extends Fragment {
         protected void onPostExecute(List<LeaveTransaction> result) {
             super.onPostExecute(result);
 
-            if (result.size() > 0) {
+            if (result == null){
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            }
+            else if(result.size() > 0) {
                 lView.setVisibility(View.VISIBLE);
                 noApproveLeave.setVisibility(View.GONE);
 
@@ -260,13 +278,17 @@ public class ApproveLeaveTaskList extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Loading leaves to be approved...");
+            dialog.setCancelable(false);
             dialog.show();
         }
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return leaveApplicationFlowWS.getPendingLeaveRequestsByRoleOfUser();
-
+            try {
+                return leaveApplicationFlowWS.getPendingLeaveRequestsByRoleOfUser();
+            }catch(Exception e){
+                return null;
+            }
         }
     }
 

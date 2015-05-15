@@ -1,6 +1,7 @@
 package hrm.com.profile;
 
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -96,8 +97,6 @@ public class EditBasicDetails extends Fragment implements AdapterView.OnItemSele
                 }
                 UpdateProfileTask update = new UpdateProfileTask();
                 update.execute();
-                Toast.makeText(getActivity().getApplicationContext(),R.string.info_profileUpdated, Toast.LENGTH_SHORT).show();
-                getActivity().onBackPressed();
                 return true;
         }
         return false;
@@ -177,10 +176,16 @@ public class EditBasicDetails extends Fragment implements AdapterView.OnItemSele
     private class UpdateProfileTask extends AsyncTask<String, Void, Employee> {
 
         private Employee toUpdateEmployee;
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
 
         @Override
         protected void onPreExecute(){
             super.onPreExecute();
+
+            dialog.setMessage("Updating profile...");
+            dialog.setCancelable(false);
+            dialog.show();
+
             toUpdateEmployee = new Employee();
             toUpdateEmployee = employee;
 
@@ -197,13 +202,24 @@ public class EditBasicDetails extends Fragment implements AdapterView.OnItemSele
 
         @Override
         protected Employee doInBackground(String... params) {
-            return employeeWS.update(toUpdateEmployee);
+            try{
+                return employeeWS.update(toUpdateEmployee);
+            }catch(Exception e) {
+                return null;
+            }
         }
 
+
         @Override
-        protected void onPostExecute(Employee result){
+        protected void onPostExecute(Employee result) {
             super.onPostExecute(result);
-            employee = result;
+            if (result != null) {
+                employee = result;
+                Toast.makeText(getActivity().getApplicationContext(), R.string.info_profileUpdated, Toast.LENGTH_SHORT).show();
+                getActivity().onBackPressed();
+            }else
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
         }
     }
 

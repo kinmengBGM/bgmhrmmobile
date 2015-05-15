@@ -192,7 +192,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
 
     public void updateUpcomingLeaveUI(List<LeaveTransaction> result){
 
-        if(result.size() > 0) {
+        if (result == null){
+            Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+        }
+        else if(result.size() > 0) {
             upcomingNoDataLayout.setVisibility(View.GONE);
             upcomingGotDataLayout.setVisibility(View.VISIBLE);
 
@@ -224,7 +227,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return leaveTransactionWS.getAllFutureLeavesAppliedByEmployee(userId);
+            try {
+                return leaveTransactionWS.getAllFutureLeavesAppliedByEmployee(userId);
+            }catch (Exception e){
+                return null;
+            }
+
         }
 
         @Override
@@ -232,6 +240,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
             super.onPreExecute();
 
             dialog.setMessage("Loading upcoming leaves...");
+            dialog.setCancelable(false);
             dialog.show();
         }
     }
@@ -243,7 +252,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         } else
             return false;
     }
-
 
     private File createPdfFile(String sickLeaveAttachmentName, byte[] bytes) throws IOException {
         // Create an image file name
@@ -280,7 +288,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
 
     public void updateApproveLeaveUI(List<LeaveTransaction> result){
 
-        if (result.size() > 0) {
+        if (result == null){
+            Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+        }
+        else if (result.size() > 0) {
             approveNoDataLayout.setVisibility(View.GONE);
             approveGotDataLayout.setVisibility(View.VISIBLE);
 
@@ -327,6 +338,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
                         @Override
                         public void onRejectLeave(String reason) {
                             dialog.setMessage("Rejecting leave application...");
+                            dialog.setCancelable(false);
                             dialog.show();
                             LeaveApprovalManagement leaveApprovalManagement =
                                     new LeaveApprovalManagement(username, password, first.getId(), user);
@@ -338,6 +350,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
                                     Toast.makeText(getActivity().getApplicationContext(), R.string.info_rejectleave, Toast.LENGTH_SHORT).show();
                                     PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
                                     repopulate.execute();
+                                }
+
+                                @Override
+                                public void onTaskNotCompleted() {
+                                    rej.dismiss();
+                                    dialog.dismiss();
+                                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -351,6 +370,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
                 public void onClick(View v) {
                     final ProgressDialog dialog = new ProgressDialog(getActivity());
                     dialog.setMessage("Approving leave application...");
+                    dialog.setCancelable(false);
                     dialog.show();
                     LeaveApprovalManagement leaveApprovalManagement =
                             new LeaveApprovalManagement(username, password, first.getId(), user);
@@ -361,6 +381,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
                             Toast.makeText(getActivity().getApplicationContext(), R.string.info_approveleave, Toast.LENGTH_SHORT).show();
                             PopulateApproveLeaveTaskList repopulate = new PopulateApproveLeaveTaskList();
                             repopulate.execute();
+                        }
+
+                        @Override
+                        public void onTaskNotCompleted() {
+                            dialog.dismiss();
+                            Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -401,12 +427,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
             super.onPreExecute();
 
             dialog.setMessage("Loading leaves to be approved...");
+            dialog.setCancelable(false);
             dialog.show();
         }
 
         @Override
         protected List<LeaveTransaction> doInBackground(String... params) {
-            return leaveApplicationFlowWS.getPendingLeaveRequestsByRoleOfUser();
+            try {
+                return leaveApplicationFlowWS.getPendingLeaveRequestsByRoleOfUser();
+            }catch(Exception e){
+                return null;
+            }
         }
 
     }

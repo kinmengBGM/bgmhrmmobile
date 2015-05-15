@@ -1,5 +1,6 @@
 package hrm.com.profile;
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -125,12 +126,6 @@ public class CreateAddress extends Fragment {
                 addAddressToEmployee();
                 CreateAddressTask update = new CreateAddressTask();
                 update.execute();
-                Toast.makeText(getActivity().getApplicationContext(), "Address Created", Toast.LENGTH_SHORT).show();
-
-                newAddressMap = new HashMap<Integer, Address>();
-                existingAddressList = null;
-
-                getActivity().onBackPressed();
                 return true;
         }
         return false;
@@ -138,10 +133,18 @@ public class CreateAddress extends Fragment {
 
     private class CreateAddressTask extends AsyncTask<String, Void, Employee> {
 
-        UpdateEmployeeWrapper toUpdateEmployee;
+        private UpdateEmployeeWrapper toUpdateEmployee;
+        private boolean success;
+        private final ProgressDialog dialog = new ProgressDialog(getActivity());
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
+            dialog.setMessage("Adding address...");
+            dialog.setCancelable(false);
+            dialog.show();
+
             toUpdateEmployee = new UpdateEmployeeWrapper();
 
             toUpdateEmployee.setEmployee(employee);
@@ -157,12 +160,25 @@ public class CreateAddress extends Fragment {
         @Override
         protected void onPostExecute(Employee response) {
             super.onPostExecute(response);
-            employee = response;
+            if(success) {
+                Toast.makeText(getActivity().getApplicationContext(), "Address Created", Toast.LENGTH_SHORT).show();
+                newAddressMap = new HashMap<Integer, Address>();
+                existingAddressList = null;
+                getActivity().onBackPressed();
+            }else
+                Toast.makeText(getActivity().getApplicationContext(), R.string.error_timeout, Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
         }
 
         @Override
         protected Employee doInBackground(String... params) {
-            return employeeWS.updateEmployee(toUpdateEmployee);
+            try {
+                success = true;
+                return employeeWS.updateEmployee(toUpdateEmployee);
+            }catch (Exception e){
+                success =false;
+                return null;
+            }
         }
     }
 

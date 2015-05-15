@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import org.apache.commons.lang3.StringUtils;
 
 import hrm.com.custom.listener.RejectLeaveListener;
 import hrm.com.hrmprototype.R;
@@ -49,7 +52,10 @@ public class RejectLeaveDialog extends DialogFragment implements View.OnClickLis
                 dismiss();
                 break;
             case R.id.btnRejectLeave:
-                mListener.onRejectLeave(rejectReason.getText().toString());
+                if(!StringUtils.isBlank(rejectReason.getText()))
+                    mListener.onRejectLeave(rejectReason.getText().toString());
+                else
+                    Toast.makeText(getActivity().getApplicationContext(), R.string.error_reason_empty, Toast.LENGTH_SHORT).show();
                 break;
         }
     }

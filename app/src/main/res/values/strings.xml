@@ -2,7 +2,7 @@
     <string name="app_name">Beans HRM</string>
     <string name="title_activity_home">HomeActivity</string>
 
-    <string name="host_address">http://192.168.0.202:8080/restWS-0.0.1-SNAPSHOT</string>
+    <string name="host_address">http://192.168.0.202:8080/hrmws</string>
 
     <!--List empty-->
     <string name="no_approve_leave">No leaves to be approved</string>
@@ -11,10 +11,13 @@
     <string name="no_address">No address added</string>
 
     <!--Error Messages-->
-    <string name="error_login_validation">Error: Username or password not valid.</string>
+    <string name="error_login_validation">I can\'t log you in. Please make sure you have entered the correct username and password.</string>
     <string name="error_timeout_validation">Error: Unable to connect to server.</string>
+    <string name="error_timeout">Error : Unable to process your request at this moment. Please try again after some time.</string>
+
     <string name="error_days_validation">Number of days should be half day or full day.</string>
-    <string name="error_dates_validation">Error : Unable to parse selected dates.</string>
+    <string name="error_numberofdays_validation">Please enter a valid value for the number of days.</string>
+    <string name="error_dates_validation">Please select dates for leave application.</string>
     <string name="error_reason_empty">Please enter reason.</string>
     <string name="error_days_empty">Please enter number of days.</string>
     <string name="error_sick_validation">Insufficient Leave Balance. Please apply for Unpaid Leave or try again next month.</string>
@@ -25,9 +28,8 @@
     <string name="error_sickleaveattachment_filecreation">Error : Unable to create file.</string>
     <string name="error_parseLeaveHistory">Error : Unable to retrieve leave history.</string>
     <string name="error_field_validation">Error : Please fill in the necessary information.</string>
-    <string name="error_applyleave">Error : Error processing leave application.</string>
+    <string name="error_applyleave">Error : Unable to process leave application.</string>
     <string name="error_no_pdf_viewer">Error : No application available to view this pdf file.</string>
-
 
     <!--Info Messages-->
     <string name="info_applyleave">Info : Leave Applied. You will be notified if it is approved or rejected.</string>
@@ -36,6 +38,7 @@
     <string name="info_rejectleave">Leave has been rejected.</string>
     <string name="info_approveleave">Leave has been approved.</string>
     <string name="info_profileUpdated">Profile updated.</string>
+    <string name="info_addressDeleted">Address deleted.</string>
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>

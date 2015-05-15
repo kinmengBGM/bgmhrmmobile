@@ -59,7 +59,6 @@ public class LeaveTransactionWS {
         String url = App.getContext().getResources().getString(R.string.host_address) + "/protected/leaveTransaction/getLeaveRuleByRoleAndLeaveType";
         HttpEntity request = new HttpEntity(leaveRuleWrapper, customRT.getHeaders());
 
-
         ResponseEntity<LeaveRuleBean> response = restTemplate.exchange(url, HttpMethod.POST, request, LeaveRuleBean.class);
         return response.getBody();
     }
