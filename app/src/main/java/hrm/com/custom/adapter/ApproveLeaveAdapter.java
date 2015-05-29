@@ -104,6 +104,5 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction>{
         return R.id.swipeLayout;
     }
 
-
 }
 
