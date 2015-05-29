@@ -44,6 +44,7 @@
 
     <!-- Surface View Start -->
     <LinearLayout
+        android:id="@+id/top_wrapper"
         android:padding="10dp"
         android:orientation="vertical"
         android:layout_width="match_parent"

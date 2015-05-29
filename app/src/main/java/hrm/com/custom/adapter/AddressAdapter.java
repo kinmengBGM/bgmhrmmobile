@@ -28,7 +28,6 @@ public class AddressAdapter extends ArrayAdapter<Address> {
     //Called everytime a row is created
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        // First let's verify the convertView is not null
         View v = convertView;
         if (v == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

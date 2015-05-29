@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.daimajia.swipe.SwipeLayout;
 import com.daimajia.swipe.adapters.ArraySwipeAdapter;
 
 import java.util.List;
@@ -44,7 +45,14 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction>{
             v = inflater.inflate(R.layout.row_approve_leave, null);
         }
 
-        //SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd-MM-yyyy");
+        final SwipeLayout swipeLayout = (SwipeLayout)v.findViewById(getSwipeLayoutResourceId(position));
+        swipeLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                swipeLayout.toggle();
+            }
+        });
+
         final LeaveTransaction leaveTransaction = approveLeaveList.get(position);
 
         TextView employeeName = (TextView) v.findViewById(R.id.txtApproveEmployeeName);
@@ -96,13 +104,6 @@ public class ApproveLeaveAdapter extends ArraySwipeAdapter<LeaveTransaction>{
         return R.id.swipeLayout;
     }
 
-/*
-    public LeaveTransaction getItem(int position){
-        if (approveLeaveList != null)
-            return approveLeaveList.get(position);
-        return null;
-    }
-*/
 
 }
 

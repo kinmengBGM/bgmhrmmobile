@@ -66,15 +66,17 @@ public class LeaveTransactionWS {
     public LeaveFlowDecisionsTaken saveLeaveApprovalDecisions(){
         String url = App.getContext().getResources().getString(R.string.host_address) + "/protected/leaveTransaction/saveLeaveApprovalDecisions";
         HttpEntity request = new HttpEntity(null, customRT.getHeaders());
+        ResponseEntity<LeaveFlowDecisionsTaken> response = restTemplate.exchange(url, HttpMethod.POST, request, LeaveFlowDecisionsTaken.class);
 
-        return restTemplate.exchange(url, HttpMethod.POST, request, LeaveFlowDecisionsTaken.class).getBody();
+        return response.getBody();
     }
 
     public LeaveTransaction processAppliedLeaveOfEmployee(LeaveTransaction leaveTransaction){
         String url = App.getContext().getResources().getString(R.string.host_address) + "/protected/leaveTransaction/processAppliedLeaveOfEmployee";
         HttpEntity request = new HttpEntity(leaveTransaction, customRT.getHeaders());
+        ResponseEntity<LeaveTransaction> response = restTemplate.exchange(url, HttpMethod.POST, request, LeaveTransaction.class);
 
-        return restTemplate.exchange(url, HttpMethod.POST, request, LeaveTransaction.class).getBody();
+        return response.getBody();
     }
 
     public LeaveTransaction findById(int leaveTransactionId){
@@ -87,8 +89,9 @@ public class LeaveTransactionWS {
     public LeaveFlowDecisionsTaken saveLeaveApprovalDecisions(LeaveFlowDecisionsTaken leaveFlowDecisions){
         String url = App.getContext().getResources().getString(R.string.host_address) + "/protected/leaveTransaction/saveLeaveApprovalDecisions";
         HttpEntity request = new HttpEntity(leaveFlowDecisions, customRT.getHeaders());
+        ResponseEntity<LeaveFlowDecisionsTaken> response = restTemplate.exchange(url, HttpMethod.POST, request, LeaveFlowDecisionsTaken.class);
 
-        return restTemplate.exchange(url, HttpMethod.POST, request, LeaveFlowDecisionsTaken.class).getBody();
+        return response.getBody();
     }
 
 

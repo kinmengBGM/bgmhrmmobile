@@ -294,6 +294,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
         else if (result.size() > 0) {
             approveNoDataLayout.setVisibility(View.GONE);
             approveGotDataLayout.setVisibility(View.VISIBLE);
+            approveGotDataLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    approveGotDataLayout.toggle();
+                }
+            });
 
             final LeaveTransaction first = result.get(0);
 
@@ -397,6 +403,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener{
             aNoOfDays.setText("Number of Days: " + first.getNumberOfDays().toString());
             aReason.setText("Reason: " + first.getReason());
             aDates.setText(first.fetchStartTimeStr() + " to " + first.fetchEndTimeStr());
+
 
         } else {
             approveNoDataLayout.setVisibility(View.VISIBLE);

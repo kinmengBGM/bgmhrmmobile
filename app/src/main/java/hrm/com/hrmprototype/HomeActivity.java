@@ -63,16 +63,6 @@ public class HomeActivity extends ActionBarActivity {
     private Stack<Fragment> fragmentStack;
 
     private RoleWS roleWS;
-/*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_home, menu);
-        return true;
-    }
-*/
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

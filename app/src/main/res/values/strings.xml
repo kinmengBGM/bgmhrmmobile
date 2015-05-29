@@ -4,7 +4,9 @@
 
     <string name="host_address">http://beans-my.dyndns.biz:8182/hrmws</string>
 
-<!--<string name="host_address">http://192.168.0.202:8080/hrmws</string>-->
+<!--
+    <string name="host_address">http://192.168.0.202:8080/hrmws</string>
+-->
 
     <!--List empty-->
     <string name="no_approve_leave">No leaves to be approved</string>
